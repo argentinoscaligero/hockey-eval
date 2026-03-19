@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preseleccionado Damas +55 — Evaluación</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --grass:#2D6A4F;--grass-light:#40916C;--grass-pale:#D8F3DC;--grass-mist:#f0faf2;
+    --gold:#B7791F;--gold-light:#F6AD55;--gold-pale:#FEFCE8;
+    --ink:#1A2E1E;--ink-mid:#3A4F3E;--muted:#7A9080;--line:#DCE8DE;--white:#fff;
+    --danger:#C0392B;--danger-bg:#FEF2F2;--warn:#92400E;--warn-bg:#FFFBEB;
+    --radius:12px;--radius-lg:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#F5F7F5;color:var(--ink);min-height:100vh;}
+
+  /* HEADER */
+  .header{background:var(--grass);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+  .header-inner{max-width:920px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .header-logo{display:flex;align-items:center;gap:12px;}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;line-height:1.2;}
+  .header-sub{font-size:11px;opacity:.75;font-weight:300;letter-spacing:.06em;text-transform:uppercase;}
+  .header-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;font-size:12px;padding:4px 12px;font-weight:500;white-space:nowrap;}
+  .btn-header{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;}
+
+  /* LAYOUT */
+  .main{max-width:920px;margin:0 auto;padding:32px 20px 60px;}
+
+  /* ENTRY */
+  #screen-entry{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;}
+  .entry-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:440px;width:100%;box-shadow:0 4px 24px rgba(45,106,79,.08);}
+  .entry-emblem{width:72px;height:72px;background:var(--grass-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;}
+  .entry-card h2{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:8px;line-height:1.25;}
+  .entry-card p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:28px;}
+  .form-group{text-align:left;margin-bottom:16px;}
+  .form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px;}
+  .form-group input,.form-group select{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);background:#fff;transition:border-color .15s;outline:none;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--grass-light);}
+  .btn-primary{width:100%;padding:13px;background:var(--grass);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;margin-top:8px;}
+  .btn-primary:hover{background:var(--grass-light);}
+  .btn-primary:active{transform:scale(.98);}
+  .btn-primary:disabled{background:var(--muted);cursor:not-allowed;}
+
+  /* SECTION NAV */
+  .section-nav{display:flex;gap:6px;margin-bottom:28px;background:#fff;padding:6px;border-radius:var(--radius-lg);border:1px solid var(--line);}
+  .tab-btn{flex:1;padding:10px 8px;border:none;border-radius:10px;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;}
+  .tab-btn.active{background:var(--grass);color:#fff;}
+  .tab-btn:not(.active):hover{background:var(--grass-mist);color:var(--grass);}
+  .tab-badge{display:inline-block;background:rgba(255,255,255,.25);border-radius:8px;font-size:10px;padding:1px 5px;margin-left:4px;vertical-align:middle;}
+  .tab-btn:not(.active) .tab-badge{background:var(--grass-pale);color:var(--grass);}
+
+  /* PROGRESS */
+  .progress-bar-wrap{background:var(--line);border-radius:99px;height:4px;margin-bottom:28px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--grass-light);border-radius:99px;transition:width .4s ease;}
+
+  /* SECTION HEADER */
+  .section-header{margin-bottom:24px;}
+  .section-header h2{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;}
+  .section-header p{font-size:13px;color:var(--muted);line-height:1.5;}
+
+  /* Q BLOCK */
+  .q-block{background:#fff;border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:14px;border:1.5px solid var(--line);transition:border-color .2s;}
+  .q-block.answered{border-color:var(--grass-light);}
+  .q-num{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+  .q-text{font-size:15px;font-weight:500;color:var(--ink);line-height:1.55;margin-bottom:16px;}
+  .q-context{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;line-height:1.5;}
+
+  /* RADIO */
+  .radio-group{display:flex;flex-direction:column;gap:8px;}
+  .radio-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--line);cursor:pointer;transition:all .12s;font-size:14px;color:var(--ink-mid);line-height:1.4;}
+  .radio-opt:hover{border-color:var(--grass-light);background:var(--grass-mist);}
+  .radio-opt input[type=radio]{display:none;}
+  .radio-dot{width:16px;height:16px;min-width:16px;border-radius:50%;border:2px solid var(--line);margin-top:1px;transition:all .12s;background:#fff;display:flex;align-items:center;justify-content:center;}
+  .radio-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--grass);opacity:0;transition:opacity .12s;}
+  .radio-opt.selected{border-color:var(--grass);background:var(--grass-mist);}
+  .radio-opt.selected .radio-dot{border-color:var(--grass);}
+  .radio-opt.selected .radio-dot::after{opacity:1;}
+
+  /* LIKERT */
+  .likert-wrap{overflow-x:auto;}
+  .likert-table{width:100%;border-collapse:collapse;font-size:12px;min-width:340px;}
+  .likert-table th{text-align:center;padding:6px 4px;color:var(--muted);font-weight:500;font-size:11px;}
+  .likert-table td{padding:4px;text-align:center;}
+  .likert-table input[type=radio]{accent-color:var(--grass);width:18px;height:18px;cursor:pointer;}
+
+  /* TEXTAREA */
+  .q-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);resize:vertical;min-height:90px;outline:none;transition:border-color .15s;}
+  .q-textarea:focus{border-color:var(--grass-light);}
+
+  /* REACTION */
+  .reaction-box{border-radius:var(--radius);padding:32px 20px;text-align:center;font-size:15px;font-weight:500;cursor:pointer;user-select:none;transition:background .08s;margin:4px 0;}
+  .reaction-box.wait{background:var(--danger-bg);color:var(--danger);border:2px dashed #FCA5A5;}
+  .reaction-box.go{background:#DCFCE7;color:#166534;border:2px solid #86EFAC;}
+  .reaction-box.done{background:var(--grass-mist);color:var(--grass);border:2px solid var(--grass-light);}
+
+  /* MEMORY */
+  .mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0;}
+  .mem-cell{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid var(--line);background:#fff;transition:all .12s;}
+  .mem-cell.lit{background:var(--gold-pale);border-color:var(--gold-light);transform:scale(1.05);}
+  .mem-cell.selected{background:var(--grass-pale);border-color:var(--grass-light);}
+  .mem-cell.correct{background:#DCFCE7;border-color:#86EFAC;}
+  .mem-cell.wrong{background:var(--danger-bg);border-color:#FCA5A5;}
+
+  /* ATTENTION */
+  .attn-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0;}
+  .attn-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;border:1.5px solid var(--line);background:#fff;cursor:pointer;transition:all .1s;color:var(--ink);}
+  .attn-cell:hover{background:var(--grass-mist);border-color:var(--grass-light);}
+  .attn-cell.marked{background:var(--grass-pale);border-color:var(--grass);color:var(--grass);}
+  .timer-display{font-size:18px;font-weight:700;color:var(--grass);font-variant-numeric:tabular-nums;margin-bottom:8px;}
+
+  /* BUTTONS */
+  .btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px;}
+  .btn-secondary{padding:12px 24px;background:#fff;color:var(--ink-mid);border:1.5px solid var(--line);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .12s;}
+  .btn-secondary:hover{background:#F5F7F5;border-color:var(--muted);}
+  .btn-next{padding:12px 28px;background:var(--grass);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px;}
+  .btn-next:hover{background:var(--grass-light);}
+  .btn-next:disabled{background:var(--muted);cursor:not-allowed;}
+  .tip{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;}
+
+  /* FINAL */
+  #screen-final{display:none;text-align:center;padding:60px 20px;}
+  .final-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:480px;margin:0 auto;box-shadow:0 4px 24px rgba(45,106,79,.08);}
+  .final-card h2{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:10px;}
+  .final-card p{color:var(--muted);font-size:14px;line-height:1.65;}
+  .player-name-badge{background:var(--grass-pale);color:var(--grass);font-weight:600;font-size:14px;padding:6px 16px;border-radius:20px;display:inline-block;margin-bottom:20px;}
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0;text-align:left;}
+  .result-item{background:#F5F7F5;border-radius:var(--radius);padding:12px 14px;}
+  .result-item .label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .result-item .value{font-size:15px;font-weight:600;color:var(--ink);}
+  .done-icon{width:64px;height:64px;background:var(--grass-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;}
+
+  /* ADMIN */
+  #screen-admin{display:none;}
+  .admin-login-card{max-width:360px;margin:60px auto;background:#fff;border-radius:var(--radius-lg);padding:36px;border:1px solid var(--line);text-align:center;}
+  .admin-login-card h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:20px;}
+
+  /* ADMIN TABS */
+  .admin-tabs{display:flex;gap:4px;background:#fff;padding:5px;border-radius:var(--radius-lg);border:1px solid var(--line);margin-bottom:24px;}
+  .admin-tab{flex:1;padding:9px 6px;border:none;border-radius:9px;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;}
+  .admin-tab.active{background:var(--grass);color:#fff;}
+  .admin-tab:not(.active):hover{background:var(--grass-mist);color:var(--grass);}
+
+  /* ADMIN TABLE */
+  .admin-table-wrap{overflow-x:auto;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--line);}
+  table.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .admin-table th{text-align:left;padding:12px 16px;background:#F5F7F5;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--line);}
+  .admin-table td{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;}
+  .admin-table tr:last-child td{border-bottom:none;}
+  .admin-table tr:hover td{background:#FAFBFA;}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .pill-green{background:var(--grass-pale);color:var(--grass);}
+  .pill-gold{background:var(--gold-pale);color:var(--gold);}
+  .pill-red{background:var(--danger-bg);color:var(--danger);}
+  .detail-btn{padding:5px 12px;background:var(--grass-pale);color:var(--grass);border:1px solid var(--grass-light);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
+  .empty-state .big{font-size:40px;margin-bottom:12px;}
+
+  /* ALERT BADGES */
+  .alert-badge{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin:2px 2px 0 0;border:1px solid #FDE68A;}
+
+  /* CHARTS */
+  .charts-section{display:none;}
+  .charts-section.active{display:block;}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+  .chart-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid var(--line);}
+  .chart-card h4{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .chart-card-full{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid var(--line);margin-bottom:20px;}
+  .chart-card-full h4{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .jugadora-select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:#fff;outline:none;margin-bottom:16px;}
+  .jugadora-select:focus{border-color:var(--grass-light);}
+
+  /* RANKING TABLE */
+  .rank-num{font-size:16px;font-weight:700;color:var(--muted);}
+  .rank-1{color:#B7791F;}
+  .rank-2{color:#6B7280;}
+  .rank-3{color:#92400E;}
+
+  /* MODAL */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(26,46,30,.55);z-index:200;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.open{display:flex;}
+  .modal-card{background:#fff;border-radius:var(--radius-lg);padding:32px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;}
+  .modal-card h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:20px;}
+  .modal-section{margin-bottom:20px;}
+  .modal-section h4{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .modal-row{display:flex;gap:8px;margin-bottom:8px;font-size:13px;line-height:1.5;}
+  .modal-row .q{color:var(--muted);min-width:160px;flex-shrink:0;}
+  .modal-row .a{color:var(--ink);font-weight:500;}
+  .btn-close{margin-top:16px;padding:10px 20px;background:var(--grass);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+
+  /* LOADING */
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;z-index:500;display:none;}
+  .spinner{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--grass);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:14px;z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  @media(max-width:640px){
+    .header-title{font-size:15px;}
+    .entry-card{padding:32px 20px;}
+    .q-block{padding:16px;}
+    .attn-grid{grid-template-columns:repeat(6,1fr);}
+    .result-grid,.chart-grid{grid-template-columns:1fr;}
+    .modal-card{padding:20px;}
+    .modal-row{flex-direction:column;gap:2px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="18" fill="rgba(255,255,255,.15)"/>
+        <path d="M10 8 L22 24 Q24 28 20 30 Q16 32 14 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="26" cy="14" r="4" fill="rgba(255,255,255,.6)"/>
+      </svg>
+      <div>
+        <div class="header-title">Preseleccionado Damas +55</div>
+        <div class="header-sub">Hockey sobre Césped · Evaluación</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="header-badge" id="player-badge" style="display:none"></div>
+      <button class="btn-header" onclick="showAdmin()">Admin</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════ ENTRY ═══════════ -->
+<div id="screen-entry">
+  <div class="entry-card">
+    <div class="entry-emblem">🏑</div>
+    <h2>Bienvenida al proceso de evaluación</h2>
+    <p>Completá tus datos para comenzar. El test tiene dos módulos: psicotécnico individual y evaluación grupal.</p>
+    <div class="form-group"><label>Nombre completo</label><input type="text" id="input-name" placeholder="Nombre y apellido" autocomplete="name"></div>
+    <div class="form-group"><label>Posición en el equipo</label>
+      <select id="input-position">
+        <option value="">Seleccioná tu posición</option>
+        <option>Arquera</option><option>Defensora</option><option>Mediocampista</option><option>Delantera</option><option>Polivalente</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Años en el equipo</label>
+      <select id="input-years">
+        <option value="">Seleccioná</option>
+        <option>Menos de 1 año</option><option>1 a 3 años</option><option>4 a 7 años</option><option>Más de 7 años</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="startTest()">Comenzar evaluación →</button>
+  </div>
+</div>
+
+<!-- ═══════════ TESTS ═══════════ -->
+<div id="screen-tests" style="display:none;">
+  <div class="section-nav">
+    <button class="tab-btn active" onclick="goSection(0)" id="tab-0">Psicotécnico <span class="tab-badge" id="tabprog-0">0/5</span></button>
+    <button class="tab-btn" onclick="goSection(1)" id="tab-1">Test Grupal <span class="tab-badge" id="tabprog-1">0/5</span></button>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <!-- SECTION 0: PSICOTÉCNICO -->
+  <div id="section-0">
+    <div class="section-header"><h2>Test Psicotécnico Individual</h2><p>Evaluación de habilidades cognitivas: razonamiento, atención, memoria, reacción y personalidad.</p></div>
+
+    <div id="mod-0">
+      <div class="q-block" id="qb-logic-0"><div class="q-num">Razonamiento lógico · 1 de 3</div><div class="q-text">En un partido, tu equipo anota 3 goles en el primer tiempo y 2 en el segundo. El rival anota 1 en cada tiempo. ¿Cuántos goles de diferencia tiene tu equipo al final?</div><div class="radio-group" id="rg-logic-0"></div></div>
+      <div class="q-block" id="qb-logic-1"><div class="q-num">Razonamiento lógico · 2 de 3</div><div class="q-text">Si A es más rápida que B, y B es más rápida que C, pero C es más resistente que A, ¿quién es la más completa para jugar 70 minutos?</div><div class="radio-group" id="rg-logic-1"></div></div>
+      <div class="q-block" id="qb-logic-2"><div class="q-num">Razonamiento lógico · 3 de 3</div><div class="q-text">En una secuencia táctica se realizan siempre: recepción → control → pase. Si una jugadora recibe y no controla, ¿qué paso se salteó?</div><div class="radio-group" id="rg-logic-2"></div></div>
+      <div class="btn-row"><div></div><button class="btn-next" onclick="nextMod(0,1)">Continuar →</button></div>
+    </div>
+
+    <div id="mod-1" style="display:none;">
+      <div class="q-block"><div class="q-num">Personalidad deportiva</div><div class="q-text">Indicá cuánto te identificás con cada afirmación. (1 = nada, 5 = totalmente)</div><div class="likert-wrap" id="likert-personality"></div></div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevMod(1,0)">← Anterior</button><button class="btn-next" onclick="nextMod(1,2)">Continuar →</button></div>
+    </div>
+
+    <div id="mod-2" style="display:none;">
+      <div class="q-block"><div class="q-num">Atención y concentración</div><div class="q-text">Marcá todos los números <strong>7</strong> que encuentres en la grilla. Tenés 45 segundos.</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px;" id="attn-status">Presioná "Iniciar" para empezar el cronómetro.</div>
+        <div class="timer-display" id="attn-timer" style="display:none">0:45</div>
+        <div class="attn-grid" id="attn-grid" style="pointer-events:none;opacity:.5;"></div>
+        <div style="margin-top:12px;"><button class="btn-next" id="attn-start-btn" onclick="startAttn()" style="width:auto;padding:10px 20px;">Iniciar cronómetro</button></div>
+      </div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevMod(2,1)">← Anterior</button><button class="btn-next" onclick="nextMod(2,3)">Continuar →</button></div>
+    </div>
+
+    <div id="mod-3" style="display:none;">
+      <div class="q-block"><div class="q-num">Memoria y percepción</div><div class="q-text">Observá las figuras que se iluminan y luego recordá la secuencia en orden.</div>
+        <div class="q-context" id="mem-status">Presioná "Ver secuencia" para comenzar.</div>
+        <div class="mem-grid" id="mem-grid"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-next" id="mem-show-btn" onclick="memShow()" style="width:auto;padding:10px 20px;">Ver secuencia</button>
+          <button class="btn-secondary" id="mem-reset-btn" onclick="memReset()" style="display:none;">Reiniciar</button>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevMod(3,2)">← Anterior</button><button class="btn-next" onclick="nextMod(3,4)">Continuar →</button></div>
+    </div>
+
+    <div id="mod-4" style="display:none;">
+      <div class="q-block"><div class="q-num">Tiempo de reacción</div><div class="q-text">Cuando el recuadro se ponga <strong>verde</strong>, tocalo lo más rápido posible. Harás 3 intentos.</div>
+        <div id="reaction-box" class="reaction-box wait" onclick="reactionClick()">Tocá aquí para comenzar</div>
+        <div class="tip" id="reaction-results"></div>
+      </div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevMod(4,3)">← Anterior</button><button class="btn-next" onclick="finishSection(0)">Finalizar módulo →</button></div>
+    </div>
+  </div><!-- /section-0 -->
+
+  <!-- SECTION 1: GRUPAL -->
+  <div id="section-1" style="display:none;">
+    <div class="section-header"><h2>Test Grupal</h2><p>Evaluación de dinámicas de equipo: cohesión, liderazgo, comunicación, conflicto y motivación.</p></div>
+
+    <div id="gmod-0">
+      <div class="q-block"><div class="q-num">Cohesión de equipo</div><div class="q-text">¿Cómo describirías el nivel de unión dentro del grupo?</div><div class="radio-group" id="rg-cohesion"></div></div>
+      <div class="q-block"><div class="q-text">¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?</div><div class="radio-group" id="rg-support"></div></div>
+      <div class="btn-row"><div></div><button class="btn-next" onclick="nextGMod(0,1)">Continuar →</button></div>
+    </div>
+
+    <div id="gmod-1" style="display:none;">
+      <div class="q-block"><div class="q-num">Roles y liderazgo</div><div class="q-text">¿Sentís que tu rol dentro del equipo está claramente definido?</div><div class="radio-group" id="rg-role"></div></div>
+      <div class="q-block"><div class="q-text">¿A quién acudís naturalmente cuando el equipo necesita dirección?</div><div class="radio-group" id="rg-leader"></div></div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(1,0)">← Anterior</button><button class="btn-next" onclick="nextGMod(1,2)">Continuar →</button></div>
+    </div>
+
+    <div id="gmod-2" style="display:none;">
+      <div class="q-block"><div class="q-num">Comunicación interna</div><div class="q-text">Evaluá la comunicación en los siguientes aspectos (1=muy baja, 5=excelente):</div><div class="likert-wrap" id="likert-comms"></div></div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(2,1)">← Anterior</button><button class="btn-next" onclick="nextGMod(2,3)">Continuar →</button></div>
+    </div>
+
+    <div id="gmod-3" style="display:none;">
+      <div class="q-block"><div class="q-num">Manejo del conflicto</div><div class="q-text">Cuando surge una diferencia importante, ¿cómo suele resolverse?</div><div class="radio-group" id="rg-conflict"></div></div>
+      <div class="q-block"><div class="q-text">Describí brevemente una situación donde el equipo superó un conflicto. ¿Qué funcionó?</div><textarea class="q-textarea" id="ta-conflict" placeholder="Tu respuesta (opcional)…" oninput="markAnswered(this)"></textarea></div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(3,2)">← Anterior</button><button class="btn-next" onclick="nextGMod(3,4)">Continuar →</button></div>
+    </div>
+
+    <div id="gmod-4" style="display:none;">
+      <div class="q-block"><div class="q-num">Motivación y compromiso</div><div class="q-text">¿Cuál es tu principal motivación para seguir en el preseleccionado?</div><div class="radio-group" id="rg-motivation"></div></div>
+      <div class="q-block"><div class="q-text">¿Qué es lo que más valorás de este grupo humano?</div><textarea class="q-textarea" id="ta-values" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
+      <div class="q-block"><div class="q-text">Si pudieras mejorar una cosa del funcionamiento del equipo, ¿cuál sería?</div><textarea class="q-textarea" id="ta-improve" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
+      <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(4,3)">← Anterior</button><button class="btn-next" onclick="saveAndFinish()" id="btn-finish">Finalizar evaluación ✓</button></div>
+    </div>
+  </div><!-- /section-1 -->
+</div><!-- /screen-tests -->
+
+<!-- ═══════════ FINAL ═══════════ -->
+<div id="screen-final">
+  <div class="final-card">
+    <div class="done-icon">🏆</div>
+    <div class="player-name-badge" id="final-name"></div>
+    <h2>¡Evaluación completa!</h2>
+    <p>Tus respuestas fueron guardadas correctamente. La comisión técnica las revisará próximamente.<br><br>¡Gracias por tu compromiso con el preseleccionado!</p>
+    <div class="result-grid" id="final-summary"></div>
+    <div style="margin-top:8px;font-size:12px;color:var(--muted);">Podés cerrar esta ventana.</div>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN ═══════════ -->
+<div id="screen-admin">
+  <div id="admin-gate">
+    <div class="admin-login-card">
+      <div style="font-size:32px;margin-bottom:12px;">🔒</div>
+      <h3>Panel de administración</h3>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="admin-pwd" placeholder="Contraseña" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+      <button class="btn-primary" onclick="adminLogin()">Ingresar</button>
+      <div style="margin-top:12px;"><button class="btn-secondary" style="width:100%;font-size:13px;" onclick="showEntry()">← Volver al inicio</button></div>
+    </div>
+  </div>
+
+  <div id="admin-panel" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:22px;">Panel de análisis</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="exportCSV()" class="btn-next" style="font-size:13px;padding:10px 16px;">⬇ Exportar CSV</button>
+        <button onclick="reloadAdmin()" class="btn-secondary" style="font-size:13px;">↻ Actualizar</button>
+        <button onclick="showEntry()" class="btn-secondary" style="font-size:13px;">← Salir</button>
+      </div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="adminTab('tabla')">📋 Respuestas</button>
+      <button class="admin-tab" onclick="adminTab('ranking')">🏅 Ranking</button>
+      <button class="admin-tab" onclick="adminTab('graficos')">📊 Gráficos</button>
+      <button class="admin-tab" onclick="adminTab('alertas')">⚠️ Alertas</button>
+    </div>
+
+    <!-- Tab: Respuestas -->
+    <div id="atab-tabla" class="charts-section active">
+      <div id="admin-table-area"></div>
+    </div>
+
+    <!-- Tab: Ranking -->
+    <div id="atab-ranking" class="charts-section">
+      <div id="ranking-area"></div>
+    </div>
+
+    <!-- Tab: Gráficos -->
+    <div id="atab-graficos" class="charts-section">
+      <div class="chart-card-full">
+        <h4>Perfil individual por jugadora</h4>
+        <select class="jugadora-select" id="jugadora-select" onchange="renderRadar()"><option value="">Seleccioná una jugadora…</option></select>
+        <div style="max-width:400px;margin:0 auto;"><canvas id="chart-radar"></canvas></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card"><h4>Comparativa — Lógica</h4><canvas id="chart-logica"></canvas></div>
+        <div class="chart-card"><h4>Comparativa — Reacción (ms)</h4><canvas id="chart-reaccion"></canvas></div>
+        <div class="chart-card"><h4>Comparativa — Personalidad</h4><canvas id="chart-personalidad"></canvas></div>
+        <div class="chart-card"><h4>Comparativa — Comunicación</h4><canvas id="chart-comms"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Tab: Alertas -->
+    <div id="atab-alertas" class="charts-section">
+      <div id="alertas-area"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Modal detalle -->
+<div class="modal-bg" id="modal-detail">
+  <div class="modal-card">
+    <h3 id="modal-title">Detalle</h3>
+    <div id="modal-body"></div>
+    <button class="btn-close" onclick="closeModal()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+const API = '/api';  // mismo origen vía Nginx
+let adminToken = null;
+let adminData  = { resumen: [], ranking: [], comparativa: [] };
+let chartInstances = {};
+
+// ═══════════════════════════════════════════════
+// QUESTION DATA
+const logicOptions = [
+  { opts:["1 gol","3 goles","2 goles","5 goles"], correct:1 },
+  { opts:["A (más rápida)","B (intermedia)","C (más resistente)","Ninguna claramente"], correct:3 },
+  { opts:["La recepción","El control","El pase","Nada, es válido igual"], correct:1 }
+];
+const personalityItems = [
+  "Mantengo la calma bajo presión en los últimos minutos",
+  "Acepto bien las críticas del cuerpo técnico",
+  "Me entrego aunque el resultado ya esté definido",
+  "Prefiero el juego colectivo al lucimiento individual",
+  "Me recupero emocionalmente rápido después de un error"
+];
+const commsItems = ["Comunicación durante el juego","Comunicación en entrenamientos","Comunicación fuera de la cancha","Comunicación con cuerpo técnico","Escucha activa entre compañeras"];
+const cohesionOpts = ["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"];
+const supportOpts  = ["Siempre","Casi siempre","A veces","Rara vez"];
+const roleOpts     = ["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"];
+const leaderOpts   = ["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"];
+const conflictOpts = ["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"];
+const motivationOpts = ["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"];
+
+// ═══════════════════════════════════════════════
+// UI BUILDERS
+function buildRadio(id, opts, name) {
+  const c = document.getElementById(id);
+  if(!c) return;
+  c.innerHTML = '';
+  opts.forEach((o, i) => {
+    const l = document.createElement('label');
+    l.className = 'radio-opt';
+    l.innerHTML = `<input type="radio" name="${name}" value="${i}"><span class="radio-dot"></span><span>${o}</span>`;
+    l.addEventListener('click', () => {
+      c.querySelectorAll('.radio-opt').forEach(x => x.classList.remove('selected'));
+      l.classList.add('selected');
+      l.closest('.q-block')?.classList.add('answered');
+    });
+    c.appendChild(l);
+  });
+}
+function buildLikert(id, items, key) {
+  const c = document.getElementById(id);
+  if(!c) return;
+  let html = `<table class="likert-table"><thead><tr><th style="text-align:left">Ítem</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>`;
+  items.forEach((item, i) => {
+    html += `<tr><td style="text-align:left;font-size:13px;color:var(--ink-mid);padding-right:8px;">${item}</td>`;
+    for(let v=1;v<=5;v++) html += `<td><input type="radio" name="${key}_${i}" value="${v}" onchange="this.closest('table').closest('.q-block')?.classList.add('answered')"></td>`;
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  c.innerHTML = html;
+}
+function initUI() {
+  logicOptions.forEach((lq,i) => buildRadio(`rg-logic-${i}`, lq.opts, `logic_${i}`));
+  buildLikert('likert-personality', personalityItems, 'pers');
+  buildRadio('rg-cohesion', cohesionOpts, 'cohesion');
+  buildRadio('rg-support', supportOpts, 'support');
+  buildRadio('rg-role', roleOpts, 'role');
+  buildRadio('rg-leader', leaderOpts, 'leader');
+  buildLikert('likert-comms', commsItems, 'comms');
+  buildRadio('rg-conflict', conflictOpts, 'conflict');
+  buildRadio('rg-motivation', motivationOpts, 'motivation');
+  buildAttnGrid();
+  buildMemGrid();
+}
+
+// ═══════════════════════════════════════════════
+// ATTENTION
+let attnData=[], attnTimer=null, attnSeconds=45, attnStarted=false, attnMarked=[];
+function buildAttnGrid() {
+  const grid = document.getElementById('attn-grid');
+  const nums = [];
+  for(let i=0;i<10;i++) nums.push(7);
+  for(let i=0;i<38;i++) { let n; do { n=Math.floor(Math.random()*9)+1; } while(n===7); nums.push(n); }
+  attnData = nums.sort(()=>Math.random()-.5);
+  attnMarked = [];
+  grid.innerHTML = '';
+  attnData.forEach((n,i) => {
+    const cell = document.createElement('div');
+    cell.className = 'attn-cell';
+    cell.textContent = n;
+    cell.dataset.idx = i;
+    cell.onclick = () => {
+      if(!attnStarted) return;
+      cell.classList.toggle('marked');
+      const ix = attnMarked.indexOf(i);
+      if(ix>-1) attnMarked.splice(ix,1); else attnMarked.push(i);
+    };
+    grid.appendChild(cell);
+  });
+}
+function startAttn() {
+  attnStarted = true;
+  const grid = document.getElementById('attn-grid');
+  grid.style.pointerEvents='auto'; grid.style.opacity='1';
+  document.getElementById('attn-start-btn').style.display='none';
+  document.getElementById('attn-timer').style.display='block';
+  document.getElementById('attn-status').textContent='Marcá todos los 7 que encuentres.';
+  attnSeconds=45;
+  attnTimer = setInterval(()=>{
+    attnSeconds--;
+    const m=Math.floor(attnSeconds/60), s=attnSeconds%60;
+    document.getElementById('attn-timer').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    if(attnSeconds<=0){
+      clearInterval(attnTimer);
+      grid.style.pointerEvents='none';
+      document.getElementById('attn-status').textContent='⏱ Tiempo terminado.';
+    }
+  },1000);
+}
+
+// ═══════════════════════════════════════════════
+// MEMORY
+const memEmojis = ['🌿','⚡','🎯','🏑','⭐','🔵','🟠','🟢','🔴','🟡','🌀','🎪'];
+let memSequence=[], memPhase='idle', memUserSeq=[], memResult=null, memAttempts=0;
+function buildMemGrid() {
+  const grid = document.getElementById('mem-grid');
+  grid.innerHTML='';
+  for(let i=0;i<12;i++){
+    const cell=document.createElement('div');
+    cell.className='mem-cell';
+    cell.dataset.idx=i;
+    cell.textContent=memEmojis[i];
+    cell.onclick=()=>memCellClick(i);
+    grid.appendChild(cell);
+  }
+}
+function memShow() {
+  document.getElementById('mem-show-btn').style.display='none';
+  memAttempts++;
+  memSequence=[];
+  const avail=[...Array(12).keys()];
+  for(let i=0;i<4;i++) memSequence.push(avail.splice(Math.floor(Math.random()*avail.length),1)[0]);
+  memPhase='showing';
+  document.getElementById('mem-status').textContent='Memorizá la secuencia…';
+  let step=0;
+  function lightUp(){
+    if(step>0) document.querySelector(`.mem-cell[data-idx="${memSequence[step-1]}"]`).classList.remove('lit');
+    if(step<memSequence.length){
+      document.querySelector(`.mem-cell[data-idx="${memSequence[step]}"]`).classList.add('lit');
+      step++;
+      setTimeout(lightUp,800);
+    } else {
+      setTimeout(()=>{
+        memPhase='input'; memUserSeq=[];
+        document.getElementById('mem-status').textContent='Ahora tocá las figuras en el mismo orden.';
+        document.getElementById('mem-reset-btn').style.display='inline-block';
+      },600);
+    }
+  }
+  lightUp();
+}
+function memCellClick(idx) {
+  if(memPhase!=='input') return;
+  const cell=document.querySelector(`.mem-cell[data-idx="${idx}"]`);
+  memUserSeq.push(idx);
+  cell.classList.add('selected');
+  if(memUserSeq.length===memSequence.length){
+    memResult=memUserSeq.every((v,i)=>v===memSequence[i]);
+    memUserSeq.forEach((v,i)=>{ const c=document.querySelector(`.mem-cell[data-idx="${v}"]`); c.classList.remove('selected'); c.classList.add(memSequence[i]===v?'correct':'wrong'); });
+    document.getElementById('mem-status').textContent=memResult?'✅ ¡Correcto! Secuencia perfecta.':'❌ No fue el orden exacto. Podés reintentar.';
+    memPhase='done';
+  }
+}
+function memReset() {
+  document.querySelectorAll('.mem-cell').forEach(c=>c.className='mem-cell');
+  memPhase='idle'; memUserSeq=[];
+  document.getElementById('mem-status').textContent='Presioná "Ver secuencia" para volver a intentar.';
+  document.getElementById('mem-show-btn').style.display='inline-block';
+  document.getElementById('mem-reset-btn').style.display='none';
+}
+
+// ═══════════════════════════════════════════════
+// REACTION
+let reactionState='idle', reactionStart=0, reactionTimes=[], reactionTimeout=null;
+function initReaction(){
+  reactionState='idle'; reactionTimes=[];
+  const box=document.getElementById('reaction-box');
+  box.className='reaction-box wait'; box.textContent='Tocá aquí para comenzar';
+  document.getElementById('reaction-results').textContent='';
+}
+function reactionClick(){
+  const box=document.getElementById('reaction-box');
+  if(reactionTimes.length>=3) return;
+  if(reactionState==='idle'){
+    reactionState='waiting'; box.className='reaction-box wait'; box.textContent='Esperá…';
+    reactionTimeout=setTimeout(()=>{
+      reactionState='go'; reactionStart=Date.now();
+      box.className='reaction-box go'; box.textContent='¡AHORA!';
+    },1500+Math.random()*3000);
+  } else if(reactionState==='waiting'){
+    clearTimeout(reactionTimeout);
+    box.className='reaction-box wait'; box.textContent='Demasiado pronto. Intentá de nuevo';
+    reactionState='idle';
+  } else if(reactionState==='go'){
+    const rt=Date.now()-reactionStart;
+    reactionTimes.push(rt); reactionState='idle';
+    if(reactionTimes.length<3){
+      box.className='reaction-box done'; box.textContent=`${rt}ms · Intento ${reactionTimes.length}/3 ✓ — Tocá para continuar`;
+    } else {
+      const avg=Math.round(reactionTimes.reduce((a,b)=>a+b,0)/3);
+      box.className='reaction-box done'; box.textContent=`Promedio: ${avg}ms ✓`;
+    }
+    document.getElementById('reaction-results').textContent=`Intentos: ${reactionTimes.join('ms, ')}ms`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+let currentSection=0, currentMod=0, currentGMod=0;
+function goSection(idx){
+  currentSection=idx;
+  document.getElementById('section-0').style.display=idx===0?'block':'none';
+  document.getElementById('section-1').style.display=idx===1?'block':'none';
+  document.getElementById('tab-0').className='tab-btn'+(idx===0?' active':'');
+  document.getElementById('tab-1').className='tab-btn'+(idx===1?' active':'');
+  updateProgress();
+}
+function nextMod(from,to){ document.getElementById(`mod-${from}`).style.display='none'; document.getElementById(`mod-${to}`).style.display='block'; currentMod=to; if(to===4)initReaction(); updateProgress(); window.scrollTo({top:0,behavior:'smooth'}); }
+function prevMod(from,to){ document.getElementById(`mod-${from}`).style.display='none'; document.getElementById(`mod-${to}`).style.display='block'; currentMod=to; updateProgress(); window.scrollTo({top:0,behavior:'smooth'}); }
+function nextGMod(from,to){ document.getElementById(`gmod-${from}`).style.display='none'; document.getElementById(`gmod-${to}`).style.display='block'; currentGMod=to; updateProgress(); window.scrollTo({top:0,behavior:'smooth'}); }
+function prevGMod(from,to){ document.getElementById(`gmod-${from}`).style.display='none'; document.getElementById(`gmod-${to}`).style.display='block'; currentGMod=to; updateProgress(); window.scrollTo({top:0,behavior:'smooth'}); }
+function updateProgress(){
+  const psico=(currentMod/4)*50;
+  const grupal=currentSection===1?(currentGMod/4)*50:0;
+  document.getElementById('progress-fill').style.width=(currentSection===0?psico:50+grupal)+'%';
+  document.getElementById('tabprog-0').textContent=currentMod+'/5';
+  document.getElementById('tabprog-1').textContent=(currentSection===1?currentGMod:0)+'/5';
+}
+function finishSection(idx){ if(idx===0){ goSection(1); window.scrollTo({top:0,behavior:'smooth'}); } }
+
+// ═══════════════════════════════════════════════
+// ENTRY
+let currentPlayer={};
+function startTest(){
+  const name=document.getElementById('input-name').value.trim();
+  const pos=document.getElementById('input-position').value;
+  const yrs=document.getElementById('input-years').value;
+  if(!name||!pos||!yrs){ showToast('Completá todos los campos.',3000,'#C0392B'); return; }
+  currentPlayer={name,position:pos,years:yrs};
+  document.getElementById('player-badge').textContent=name;
+  document.getElementById('player-badge').style.display='block';
+  document.getElementById('screen-entry').style.display='none';
+  document.getElementById('screen-tests').style.display='block';
+  initUI();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showEntry(){
+  ['screen-admin','screen-final','screen-tests'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('screen-entry').style.display='flex';
+  document.getElementById('player-badge').style.display='none';
+}
+
+// ═══════════════════════════════════════════════
+// COLLECT + SAVE
+function collectPayload(){
+  const logica = logicOptions.map((lq,i)=>{
+    const sel=document.querySelector(`input[name="logic_${i}"]:checked`);
+    return { pregunta:i+1, respuesta: sel?lq.opts[sel.value]:'—', correcta: sel?parseInt(sel.value)===lq.correct:false };
+  });
+  const personalidad = personalityItems.map((desc,i)=>{
+    const sel=document.querySelector(`input[name="pers_${i}"]:checked`);
+    return { item:i+1, descripcion:desc, valor: sel?parseInt(sel.value):0 };
+  }).filter(p=>p.valor>0);
+  const targets=attnData.map((v,i)=>v===7?i:-1).filter(x=>x>=0);
+  const hits=attnMarked.filter(i=>attnData[i]===7).length;
+  const fp=attnMarked.filter(i=>attnData[i]!==7).length;
+  const cohSel=document.querySelector('input[name="cohesion"]:checked');
+  const supSel=document.querySelector('input[name="support"]:checked');
+  const roleSel=document.querySelector('input[name="role"]:checked');
+  const leaderSel=document.querySelector('input[name="leader"]:checked');
+  const confSel=document.querySelector('input[name="conflict"]:checked');
+  const motSel=document.querySelector('input[name="motivation"]:checked');
+  const comms=commsItems.map((desc,i)=>{
+    const sel=document.querySelector(`input[name="comms_${i}"]:checked`);
+    return { item:i+1, descripcion:desc, valor:sel?parseInt(sel.value):0 };
+  }).filter(c=>c.valor>0);
+  return {
+    jugadora:{ nombre:currentPlayer.name, posicion:currentPlayer.position, trayectoria:currentPlayer.years },
+    psicotecnico:{
+      logica,
+      personalidad,
+      atencion:{ aciertos:hits, totalTargets:targets.length, falsosPositivos:fp },
+      memoria:{ correcta:memResult===true, intentos:memAttempts||1 },
+      reaccion:reactionTimes
+    },
+    grupal:{
+      cohesion:{ nivelUnion:cohSel?cohesionOpts[cohSel.value]:'—', apoyo:supSel?supportOpts[supSel.value]:'—' },
+      liderazgo:{ claridadRol:roleSel?roleOpts[roleSel.value]:'—', referente:leaderSel?leaderOpts[leaderSel.value]:'—' },
+      comunicacion:comms,
+      conflicto:{ mecanismo:confSel?conflictOpts[confSel.value]:'—', relato:document.getElementById('ta-conflict').value||null },
+      motivacion:{ motivacion:motSel?motivationOpts[motSel.value]:'—', valoresGrupo:document.getElementById('ta-values').value||null, mejoraSugerida:document.getElementById('ta-improve').value||null }
+    }
+  };
+}
+
+async function saveAndFinish(){
+  clearInterval(attnTimer);
+  setLoading(true);
+  const payload=collectPayload();
+  try {
+    const r=await fetch(`${API}/eval/submit`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Error al guardar');
+    // Mostrar pantalla final
+    document.getElementById('final-name').textContent=currentPlayer.name;
+    const p=payload.psicotecnico;
+    const logicaOk=p.logica.filter(l=>l.correcta).length;
+    document.getElementById('final-summary').innerHTML=`
+      <div class="result-item"><div class="label">Posición</div><div class="value">${currentPlayer.position}</div></div>
+      <div class="result-item"><div class="label">Trayectoria</div><div class="value">${currentPlayer.years}</div></div>
+      <div class="result-item"><div class="label">Lógica</div><div class="value">${logicaOk}/3 correctas</div></div>
+      <div class="result-item"><div class="label">Atención</div><div class="value">${p.atencion.aciertos}/${p.atencion.totalTargets} aciertos</div></div>
+      <div class="result-item"><div class="label">Memoria</div><div class="value">${p.memoria.correcta?'✅ Correcta':'❌ Incorrecta'}</div></div>
+      <div class="result-item"><div class="label">Reacción</div><div class="value">${reactionTimes.length?Math.round(reactionTimes.reduce((a,b)=>a+b,0)/reactionTimes.length)+'ms prom.':'—'}</div></div>
+    `;
+    document.getElementById('screen-tests').style.display='none';
+    document.getElementById('screen-final').style.display='block';
+    document.getElementById('progress-fill').style.width='100%';
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(err){
+    showToast('Error al guardar: '+err.message, 4000, '#C0392B');
+  } finally { setLoading(false); }
+}
+
+function markAnswered(el){ if(el.value.trim()) el.closest('.q-block')?.classList.add('answered'); }
+
+// ═══════════════════════════════════════════════
+// ADMIN
+function showAdmin(){
+  ['screen-entry','screen-tests','screen-final'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('screen-admin').style.display='block';
+  document.getElementById('admin-gate').style.display='block';
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-pwd').value='';
+}
+
+async function adminLogin(){
+  const pwd=document.getElementById('admin-pwd').value;
+  if(!pwd){ showToast('Ingresá la contraseña.',2000,'#C0392B'); return; }
+  setLoading(true);
+  try {
+    const r=await fetch(`${API}/auth/login`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pwd}) });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Error');
+    adminToken=data.token;
+    document.getElementById('admin-gate').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    await loadAdminData();
+  } catch(err){
+    showToast(err.message,3000,'#C0392B');
+  } finally { setLoading(false); }
+}
+
+async function loadAdminData(){
+  setLoading(true);
+  try {
+    const headers={'Authorization':'Bearer '+adminToken};
+    const [resumen,ranking,comparativa]=await Promise.all([
+      fetch(`${API}/admin/resumen`,{headers}).then(r=>r.json()),
+      fetch(`${API}/admin/ranking`,{headers}).then(r=>r.json()),
+      fetch(`${API}/admin/comparativa`,{headers}).then(r=>r.json()),
+    ]);
+    adminData={resumen,ranking,comparativa};
+    renderTabla();
+    renderRanking();
+    renderAlertas();
+    buildJugadoraSelect();
+    renderBarCharts();
+  } catch(err){
+    showToast('Error cargando datos: '+err.message,3000,'#C0392B');
+  } finally { setLoading(false); }
+}
+
+async function reloadAdmin(){ await loadAdminData(); showToast('Datos actualizados.',2000); }
+
+// ── TABLA ──
+function renderTabla(){
+  const area=document.getElementById('admin-table-area');
+  const rows=adminData.resumen;
+  if(!rows||rows.length===0){
+    area.innerHTML=`<div class="empty-state"><div class="big">📋</div><p>Todavía no hay respuestas. Las jugadoras deben completar la evaluación.</p></div>`;
+    return;
+  }
+  let html=`<div class="admin-table-wrap"><table class="admin-table">
+    <thead><tr><th>#</th><th>Nombre</th><th>Posición</th><th>Lógica</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Pers.</th><th>Comms.</th><th>Fecha</th><th></th></tr></thead><tbody>`;
+  rows.forEach((r,i)=>{
+    const logicPill=parseInt(r.logica_correctas)>=2?'pill-green':'pill-gold';
+    const memPill=r.memoria_ok?'pill-green':'pill-red';
+    const reacMs=r.reaccion_ms_avg?r.reaccion_ms_avg+'ms':'—';
+    html+=`<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><strong>${r.nombre}</strong><br><span style="font-size:11px;color:var(--muted)">${r.trayectoria}</span></td>
+      <td>${r.posicion}</td>
+      <td><span class="pill ${logicPill}">${r.logica_correctas}/3</span></td>
+      <td>${r.atencion_aciertos||'—'}/${r.atencion_total||'—'}</td>
+      <td><span class="pill ${memPill}">${r.memoria_ok?'✓ Sí':'✗ No'}</span></td>
+      <td>${reacMs}</td>
+      <td>${r.personalidad_avg||'—'}</td>
+      <td>${r.comunicacion_avg||'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.created_at?new Date(r.created_at).toLocaleDateString('es-AR'):''}</td>
+      <td><button class="detail-btn" onclick="showDetail('${r.sesion_id}')">Ver →</button></td>
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+  area.innerHTML=html;
+}
+
+// ── RANKING ──
+function renderRanking(){
+  const area=document.getElementById('ranking-area');
+  const rows=adminData.ranking;
+  if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">🏅</div><p>Sin datos todavía.</p></div>'; return; }
+  const dims=[
+    {label:'Razonamiento lógico',key:'logica_score',max:3,unit:'/3',asc:false},
+    {label:'Atención (%)',key:'atencion_pct',max:100,unit:'%',asc:false},
+    {label:'Reacción (ms)',key:'reaccion_ms',max:null,unit:'ms',asc:true},
+    {label:'Personalidad (avg)',key:'personalidad_avg',max:5,unit:'/5',asc:false},
+    {label:'Comunicación (avg)',key:'comunicacion_avg',max:5,unit:'/5',asc:false},
+  ];
+  let html='';
+  dims.forEach(dim=>{
+    const sorted=[...rows].filter(r=>r[dim.key]!=null).sort((a,b)=>dim.asc?a[dim.key]-b[dim.key]:b[dim.key]-a[dim.key]);
+    html+=`<div class="admin-table-wrap" style="margin-bottom:20px;"><div style="padding:14px 16px;background:#F5F7F5;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${dim.label}</div>
+    <table class="admin-table"><thead><tr><th>Pos.</th><th>Jugadora</th><th>Posición</th><th>Resultado</th></tr></thead><tbody>`;
+    sorted.forEach((r,i)=>{
+      const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-num';
+      html+=`<tr><td><span class="rank-num ${rankClass}">${i+1}</span></td><td><strong>${r.nombre}</strong></td><td>${r.posicion}</td><td><strong>${parseFloat(r[dim.key]).toFixed(1)}${dim.unit}</strong></td></tr>`;
+    });
+    html+='</tbody></table></div>';
+  });
+  area.innerHTML=html;
+}
+
+// ── ALERTAS ──
+function renderAlertas(){
+  const area=document.getElementById('alertas-area');
+  const rows=adminData.ranking;
+  if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">⚠️</div><p>Sin datos todavía.</p></div>'; return; }
+  const conAlertas=rows.filter(r=>r.alertas&&r.alertas.length>0);
+  if(conAlertas.length===0){
+    area.innerHTML=`<div class="empty-state"><div class="big">✅</div><p>¡Sin alertas! Todas las jugadoras evaluadas presentan perfiles dentro del rango esperado.</p></div>`;
+    return;
+  }
+  let html=`<div style="margin-bottom:16px;font-size:14px;color:var(--muted);">${conAlertas.length} jugadora${conAlertas.length>1?'s':''} con aspectos a revisar:</div>`;
+  html+=`<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Jugadora</th><th>Posición</th><th>Alertas del cuerpo técnico</th><th></th></tr></thead><tbody>`;
+  conAlertas.forEach(r=>{
+    html+=`<tr><td><strong>${r.nombre}</strong></td><td>${r.posicion}</td><td>${r.alertas.map(a=>`<span class="alert-badge">⚠ ${a}</span>`).join('')}</td><td><button class="detail-btn" onclick="showDetail('${r.sesion_id}')">Ver →</button></td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  area.innerHTML=html;
+}
+
+// ── GRÁFICOS ──
+function buildJugadoraSelect(){
+  const sel=document.getElementById('jugadora-select');
+  sel.innerHTML='<option value="">Seleccioná una jugadora…</option>';
+  (adminData.comparativa||[]).forEach(r=>{
+    const opt=document.createElement('option');
+    opt.value=r.sesion_id;
+    opt.textContent=`${r.nombre} (${r.posicion})`;
+    sel.appendChild(opt);
+  });
+}
+
+let radarChart=null;
+function renderRadar(){
+  const sesionId=document.getElementById('jugadora-select').value;
+  if(!sesionId) return;
+  const row=adminData.comparativa.find(r=>r.sesion_id===sesionId);
+  if(!row) return;
+  const ctx=document.getElementById('chart-radar').getContext('2d');
+  if(radarChart) radarChart.destroy();
+  radarChart=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:['Lógica','Personalidad','Atención','Memoria','Reacción','Comunicación'],
+      datasets:[{
+        label:row.nombre,
+        data:[row.logica_norm,row.personalidad_norm,row.atencion_norm,row.memoria_norm,row.reaccion_norm,row.comunicacion_norm],
+        backgroundColor:'rgba(45,106,79,.15)',
+        borderColor:'#2D6A4F',
+        pointBackgroundColor:'#2D6A4F',
+        pointRadius:4,
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{r:{min:0,max:10,ticks:{stepSize:2,font:{family:'DM Sans',size:11}},pointLabels:{font:{family:'DM Sans',size:12}}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function renderBarCharts(){
+  const data=adminData.comparativa;
+  if(!data||data.length===0) return;
+  const names=data.map(r=>r.nombre);
+  const green='rgba(45,106,79,.75)';
+  const gold='rgba(183,121,31,.75)';
+  const teal='rgba(15,110,86,.75)';
+  const coral='rgba(153,60,29,.75)';
+  const barOpts=(color)=>({type:'bar',options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{family:'DM Sans',size:11}}}}}});
+
+  function makeBar(canvasId,labels,values,color){
+    if(chartInstances[canvasId]) chartInstances[canvasId].destroy();
+    const ctx=document.getElementById(canvasId).getContext('2d');
+    chartInstances[canvasId]=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{data:values,backgroundColor:color,borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{family:'DM Sans',size:11}}}}}
+    });
+  }
+  makeBar('chart-logica',names,data.map(r=>parseFloat(r.logica_norm)||0),green);
+  makeBar('chart-reaccion',names,data.map(r=>{const ms=adminData.ranking.find(x=>x.sesion_id===r.sesion_id)?.reaccion_ms; return ms||0;}),coral);
+  makeBar('chart-personalidad',names,data.map(r=>parseFloat(r.personalidad_norm)||0),gold);
+  makeBar('chart-comms',names,data.map(r=>parseFloat(r.comunicacion_norm)||0),teal);
+}
+
+function adminTab(name){
+  document.querySelectorAll('.charts-section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`atab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── DETALLE MODAL ──
+async function showDetail(sesionId){
+  setLoading(true);
+  try {
+    const r=await fetch(`${API}/admin/jugadora/${sesionId}`,{headers:{'Authorization':'Bearer '+adminToken}});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error);
+    document.getElementById('modal-title').textContent=d.sesion.nombre+' — Respuestas completas';
+    let html='';
+    html+=`<div class="modal-section"><h4>Datos personales</h4>
+      <div class="modal-row"><span class="q">Posición</span><span class="a">${d.sesion.posicion}</span></div>
+      <div class="modal-row"><span class="q">Trayectoria</span><span class="a">${d.sesion.trayectoria}</span></div>
+      <div class="modal-row"><span class="q">Fecha</span><span class="a">${new Date(d.sesion.created_at).toLocaleString('es-AR')}</span></div>
+    </div>`;
+    if(d.logica.length){
+      html+=`<div class="modal-section"><h4>Razonamiento lógico</h4>`;
+      d.logica.forEach(l=>{ html+=`<div class="modal-row"><span class="q">Pregunta ${l.pregunta}</span><span class="a">${l.respuesta} <span style="color:${l.correcta?'var(--grass)':'var(--danger)'}">(${l.correcta?'Correcta':'Incorrecta'})</span></span></div>`; });
+      html+='</div>';
+    }
+    if(d.personalidad.length){
+      html+=`<div class="modal-section"><h4>Personalidad deportiva (1–5)</h4>`;
+      d.personalidad.forEach(p=>{ html+=`<div class="modal-row"><span class="q">${p.descripcion}</span><span class="a">${p.valor}</span></div>`; });
+      html+='</div>';
+    }
+    if(d.atencion){
+      html+=`<div class="modal-section"><h4>Atención y concentración</h4>
+        <div class="modal-row"><span class="q">Aciertos</span><span class="a">${d.atencion.aciertos}/${d.atencion.total_targets}</span></div>
+        <div class="modal-row"><span class="q">Falsos positivos</span><span class="a">${d.atencion.falsos_positivos}</span></div>
+      </div>`;
+    }
+    if(d.memoria){
+      html+=`<div class="modal-section"><h4>Memoria y percepción</h4>
+        <div class="modal-row"><span class="q">Resultado</span><span class="a">${d.memoria.correcta?'✅ Correcta':'❌ Incorrecta'}</span></div>
+        <div class="modal-row"><span class="q">Intentos</span><span class="a">${d.memoria.intentos}</span></div>
+      </div>`;
+    }
+    if(d.reaccion.length){
+      const avg=Math.round(d.reaccion.reduce((a,b)=>a+b.tiempo_ms,0)/d.reaccion.length);
+      html+=`<div class="modal-section"><h4>Tiempo de reacción</h4>
+        <div class="modal-row"><span class="q">Promedio</span><span class="a">${avg}ms</span></div>
+        ${d.reaccion.map(r=>`<div class="modal-row"><span class="q">Intento ${r.intento}</span><span class="a">${r.tiempo_ms}ms</span></div>`).join('')}
+      </div>`;
+    }
+    if(d.cohesion){
+      html+=`<div class="modal-section"><h4>Cohesión de equipo</h4>
+        <div class="modal-row"><span class="q">Nivel de unión</span><span class="a">${d.cohesion.nivel_union}</span></div>
+        <div class="modal-row"><span class="q">Apoyo</span><span class="a">${d.cohesion.apoyo_companieras}</span></div>
+      </div>`;
+    }
+    if(d.liderazgo){
+      html+=`<div class="modal-section"><h4>Roles y liderazgo</h4>
+        <div class="modal-row"><span class="q">Claridad del rol</span><span class="a">${d.liderazgo.claridad_rol}</span></div>
+        <div class="modal-row"><span class="q">Referente</span><span class="a">${d.liderazgo.referente}</span></div>
+      </div>`;
+    }
+    if(d.comunicacion.length){
+      html+=`<div class="modal-section"><h4>Comunicación interna (1–5)</h4>`;
+      d.comunicacion.forEach(c=>{ html+=`<div class="modal-row"><span class="q">${c.descripcion}</span><span class="a">${c.valor}</span></div>`; });
+      html+='</div>';
+    }
+    if(d.conflicto){
+      html+=`<div class="modal-section"><h4>Manejo del conflicto</h4>
+        <div class="modal-row"><span class="q">Mecanismo</span><span class="a">${d.conflicto.mecanismo}</span></div>
+        ${d.conflicto.relato?`<div class="modal-row"><span class="q">Relato</span><span class="a">${d.conflicto.relato}</span></div>`:''}
+      </div>`;
+    }
+    if(d.motivacion){
+      html+=`<div class="modal-section"><h4>Motivación y compromiso</h4>
+        <div class="modal-row"><span class="q">Motivación</span><span class="a">${d.motivacion.motivacion}</span></div>
+        ${d.motivacion.valores_grupo?`<div class="modal-row"><span class="q">Valores del grupo</span><span class="a">${d.motivacion.valores_grupo}</span></div>`:''}
+        ${d.motivacion.mejora_sugerida?`<div class="modal-row"><span class="q">Mejora sugerida</span><span class="a">${d.motivacion.mejora_sugerida}</span></div>`:''}
+      </div>`;
+    }
+    document.getElementById('modal-body').innerHTML=html;
+    document.getElementById('modal-detail').classList.add('open');
+  } catch(err){
+    showToast('Error: '+err.message,3000,'#C0392B');
+  } finally { setLoading(false); }
+}
+function closeModal(){ document.getElementById('modal-detail').classList.remove('open'); }
+
+// ── EXPORT CSV ──
+async function exportCSV(){
+  setLoading(true);
+  try {
+    const r=await fetch(`${API}/admin/export/csv`,{headers:{'Authorization':'Bearer '+adminToken}});
+    if(!r.ok) throw new Error('Sin datos');
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`evaluacion_damas55_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  } catch(err){ showToast('Error al exportar: '+err.message,3000,'#C0392B'); }
+  finally { setLoading(false); }
+}
+
+// ── UTILS ──
+function setLoading(on){ document.getElementById('loading').style.display=on?'flex':'none'; }
+let toastTimer=null;
+function showToast(msg, dur=3000, bg='#1A2E1E'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=bg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+</script>
+</body>
+</html>
