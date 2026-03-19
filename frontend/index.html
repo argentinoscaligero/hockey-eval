@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Preseleccionado Damas +55 — Evaluación</title>
+<title>Masters +55 Damas Argentina IMC — Evaluación</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --grass:#2D6A4F;--grass-light:#40916C;--grass-pale:#D8F3DC;--grass-mist:#f0faf2;
+    --grass:#1A6B8A;--grass-light:#2196B8;--grass-pale:#D6EFF8;--grass-mist:#EDF7FB;
     --gold:#B7791F;--gold-light:#F6AD55;--gold-pale:#FEFCE8;
-    --ink:#1A2E1E;--ink-mid:#3A4F3E;--muted:#7A9080;--line:#DCE8DE;--white:#fff;
+    --ink:#1A2A35;--ink-mid:#3A4F5E;--muted:#6A8A96;--line:#D4E5EC;--white:#fff;
     --danger:#C0392B;--danger-bg:#FEF2F2;--warn:#92400E;--warn-bg:#FFFBEB;
     --radius:12px;--radius-lg:20px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:#F5F7F5;color:var(--ink);min-height:100vh;}
+  body{font-family:'DM Sans',sans-serif;background:#F3F7FA;color:var(--ink);min-height:100vh;}
 
   /* HEADER */
   .header{background:var(--grass);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15);}
@@ -31,7 +31,7 @@
 
   /* ENTRY */
   #screen-entry{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;}
-  .entry-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:440px;width:100%;box-shadow:0 4px 24px rgba(45,106,79,.08);}
+  .entry-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:440px;width:100%;box-shadow:0 4px 24px rgba(26,107,138,.08);}
   .entry-emblem{width:72px;height:72px;background:var(--grass-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;}
   .entry-card h2{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:8px;line-height:1.25;}
   .entry-card p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:28px;}
@@ -114,7 +114,7 @@
   /* BUTTONS */
   .btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px;}
   .btn-secondary{padding:12px 24px;background:#fff;color:var(--ink-mid);border:1.5px solid var(--line);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .12s;}
-  .btn-secondary:hover{background:#F5F7F5;border-color:var(--muted);}
+  .btn-secondary:hover{background:#F3F7FA;border-color:var(--muted);}
   .btn-next{padding:12px 28px;background:var(--grass);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px;}
   .btn-next:hover{background:var(--grass-light);}
   .btn-next:disabled{background:var(--muted);cursor:not-allowed;}
@@ -122,12 +122,12 @@
 
   /* FINAL */
   #screen-final{display:none;text-align:center;padding:60px 20px;}
-  .final-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:480px;margin:0 auto;box-shadow:0 4px 24px rgba(45,106,79,.08);}
+  .final-card{background:#fff;border-radius:var(--radius-lg);padding:48px 40px;border:1px solid var(--line);max-width:480px;margin:0 auto;box-shadow:0 4px 24px rgba(26,107,138,.08);}
   .final-card h2{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:10px;}
   .final-card p{color:var(--muted);font-size:14px;line-height:1.65;}
   .player-name-badge{background:var(--grass-pale);color:var(--grass);font-weight:600;font-size:14px;padding:6px 16px;border-radius:20px;display:inline-block;margin-bottom:20px;}
   .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0;text-align:left;}
-  .result-item{background:#F5F7F5;border-radius:var(--radius);padding:12px 14px;}
+  .result-item{background:#F3F7FA;border-radius:var(--radius);padding:12px 14px;}
   .result-item .label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
   .result-item .value{font-size:15px;font-weight:600;color:var(--ink);}
   .done-icon{width:64px;height:64px;background:var(--grass-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;}
@@ -146,7 +146,7 @@
   /* ADMIN TABLE */
   .admin-table-wrap{overflow-x:auto;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--line);}
   table.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
-  .admin-table th{text-align:left;padding:12px 16px;background:#F5F7F5;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--line);}
+  .admin-table th{text-align:left;padding:12px 16px;background:#F3F7FA;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--line);}
   .admin-table td{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;}
   .admin-table tr:last-child td{border-bottom:none;}
   .admin-table tr:hover td{background:#FAFBFA;}
@@ -222,7 +222,7 @@
         <circle cx="26" cy="14" r="4" fill="rgba(255,255,255,.6)"/>
       </svg>
       <div>
-        <div class="header-title">Preseleccionado Damas +55</div>
+        <div class="header-title">Masters +55 Damas Argentina <span style="color:#87CEEB">IMC</span></div>
         <div class="header-sub">Hockey sobre Césped · Evaluación</div>
       </div>
     </div>
@@ -341,7 +341,7 @@
     </div>
 
     <div id="gmod-4" style="display:none;">
-      <div class="q-block"><div class="q-num">Motivación y compromiso</div><div class="q-text">¿Cuál es tu principal motivación para seguir en el preseleccionado?</div><div class="radio-group" id="rg-motivation"></div></div>
+      <div class="q-block"><div class="q-num">Motivación y compromiso</div><div class="q-text">¿Cuál es tu principal motivación para seguir en el Masters?</div><div class="radio-group" id="rg-motivation"></div></div>
       <div class="q-block"><div class="q-text">¿Qué es lo que más valorás de este grupo humano?</div><textarea class="q-textarea" id="ta-values" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
       <div class="q-block"><div class="q-text">Si pudieras mejorar una cosa del funcionamiento del equipo, ¿cuál sería?</div><textarea class="q-textarea" id="ta-improve" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
       <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(4,3)">← Anterior</button><button class="btn-next" onclick="saveAndFinish()" id="btn-finish">Finalizar evaluación ✓</button></div>
@@ -355,7 +355,7 @@
     <div class="done-icon">🏆</div>
     <div class="player-name-badge" id="final-name"></div>
     <h2>¡Evaluación completa!</h2>
-    <p>Tus respuestas fueron guardadas correctamente. La comisión técnica las revisará próximamente.<br><br>¡Gracias por tu compromiso con el preseleccionado!</p>
+    <p>Tus respuestas fueron guardadas correctamente. La comisión técnica las revisará próximamente.<br><br>¡Gracias por tu compromiso con el Masters!</p>
     <div class="result-grid" id="final-summary"></div>
     <div style="margin-top:8px;font-size:12px;color:var(--muted);">Podés cerrar esta ventana.</div>
   </div>
@@ -868,7 +868,7 @@ function renderRanking(){
   let html='';
   dims.forEach(dim=>{
     const sorted=[...rows].filter(r=>r[dim.key]!=null).sort((a,b)=>dim.asc?a[dim.key]-b[dim.key]:b[dim.key]-a[dim.key]);
-    html+=`<div class="admin-table-wrap" style="margin-bottom:20px;"><div style="padding:14px 16px;background:#F5F7F5;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${dim.label}</div>
+    html+=`<div class="admin-table-wrap" style="margin-bottom:20px;"><div style="padding:14px 16px;background:#F3F7FA;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${dim.label}</div>
     <table class="admin-table"><thead><tr><th>Pos.</th><th>Jugadora</th><th>Posición</th><th>Resultado</th></tr></thead><tbody>`;
     sorted.forEach((r,i)=>{
       const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-num';
@@ -925,9 +925,9 @@ function renderRadar(){
       datasets:[{
         label:row.nombre,
         data:[row.logica_norm,row.personalidad_norm,row.atencion_norm,row.memoria_norm,row.reaccion_norm,row.comunicacion_norm],
-        backgroundColor:'rgba(45,106,79,.15)',
-        borderColor:'#2D6A4F',
-        pointBackgroundColor:'#2D6A4F',
+        backgroundColor:'rgba(26,107,138,.15)',
+        borderColor:'#1A6B8A',
+        pointBackgroundColor:'#1A6B8A',
         pointRadius:4,
         borderWidth:2
       }]
@@ -944,7 +944,7 @@ function renderBarCharts(){
   const data=adminData.comparativa;
   if(!data||data.length===0) return;
   const names=data.map(r=>r.nombre);
-  const green='rgba(45,106,79,.75)';
+  const green='rgba(26,107,138,.75)';
   const gold='rgba(183,121,31,.75)';
   const teal='rgba(15,110,86,.75)';
   const coral='rgba(153,60,29,.75)';
@@ -1062,7 +1062,7 @@ async function exportCSV(){
     const blob=await r.blob();
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url; a.download=`evaluacion_damas55_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    a.href=url; a.download=`evaluacion_masters55_${new Date().toISOString().slice(0,10)}.csv`; a.click();
     URL.revokeObjectURL(url);
   } catch(err){ showToast('Error al exportar: '+err.message,3000,'#C0392B'); }
   finally { setLoading(false); }
