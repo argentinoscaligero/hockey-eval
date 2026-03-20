@@ -318,14 +318,14 @@
     <div class="section-header"><h2>Test Grupal</h2><p>Evaluación de dinámicas de equipo: cohesión, liderazgo, comunicación, conflicto y motivación.</p></div>
 
     <div id="gmod-0">
-      <div class="q-block"><div class="q-num">Cohesión de equipo</div><div class="q-text">¿Cómo describirías el nivel de unión dentro del grupo?</div><div class="radio-group" id="rg-cohesion"></div></div>
-      <div class="q-block"><div class="q-text">¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?</div><div class="radio-group" id="rg-support"></div></div>
+      <div class="q-block"><div class="q-num">Cohesión de equipo</div><div class="q-text" id="qt-cohesion">¿Cómo describirías el nivel de unión dentro del grupo?</div><div class="radio-group" id="rg-cohesion"></div></div>
+      <div class="q-block"><div class="q-text" id="qt-support">¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?</div><div class="radio-group" id="rg-support"></div></div>
       <div class="btn-row"><div></div><button class="btn-next" onclick="nextGMod(0,1)">Continuar →</button></div>
     </div>
 
     <div id="gmod-1" style="display:none;">
-      <div class="q-block"><div class="q-num">Roles y liderazgo</div><div class="q-text">¿Sentís que tu rol dentro del equipo está claramente definido?</div><div class="radio-group" id="rg-role"></div></div>
-      <div class="q-block"><div class="q-text">¿A quién acudís naturalmente cuando el equipo necesita dirección?</div><div class="radio-group" id="rg-leader"></div></div>
+      <div class="q-block"><div class="q-num">Roles y liderazgo</div><div class="q-text" id="qt-role">¿Sentís que tu rol dentro del equipo está claramente definido?</div><div class="radio-group" id="rg-role"></div></div>
+      <div class="q-block"><div class="q-text" id="qt-leader">¿A quién acudís naturalmente cuando el equipo necesita dirección?</div><div class="radio-group" id="rg-leader"></div></div>
       <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(1,0)">← Anterior</button><button class="btn-next" onclick="nextGMod(1,2)">Continuar →</button></div>
     </div>
 
@@ -335,13 +335,13 @@
     </div>
 
     <div id="gmod-3" style="display:none;">
-      <div class="q-block"><div class="q-num">Manejo del conflicto</div><div class="q-text">Cuando surge una diferencia importante, ¿cómo suele resolverse?</div><div class="radio-group" id="rg-conflict"></div></div>
+      <div class="q-block"><div class="q-num">Manejo del conflicto</div><div class="q-text" id="qt-conflict">Cuando surge una diferencia importante, ¿cómo suele resolverse?</div><div class="radio-group" id="rg-conflict"></div></div>
       <div class="q-block"><div class="q-text">Describí brevemente una situación donde el equipo superó un conflicto. ¿Qué funcionó?</div><textarea class="q-textarea" id="ta-conflict" placeholder="Tu respuesta (opcional)…" oninput="markAnswered(this)"></textarea></div>
       <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(3,2)">← Anterior</button><button class="btn-next" onclick="nextGMod(3,4)">Continuar →</button></div>
     </div>
 
     <div id="gmod-4" style="display:none;">
-      <div class="q-block"><div class="q-num">Motivación y compromiso</div><div class="q-text">¿Cuál es tu principal motivación para seguir en el Masters?</div><div class="radio-group" id="rg-motivation"></div></div>
+      <div class="q-block"><div class="q-num">Motivación y compromiso</div><div class="q-text" id="qt-motivation">¿Cuál es tu principal motivación para seguir en el Masters?</div><div class="radio-group" id="rg-motivation"></div></div>
       <div class="q-block"><div class="q-text">¿Qué es lo que más valorás de este grupo humano?</div><textarea class="q-textarea" id="ta-values" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
       <div class="q-block"><div class="q-text">Si pudieras mejorar una cosa del funcionamiento del equipo, ¿cuál sería?</div><textarea class="q-textarea" id="ta-improve" placeholder="Tu respuesta…" oninput="markAnswered(this)"></textarea></div>
       <div class="btn-row"><button class="btn-secondary" onclick="prevGMod(4,3)">← Anterior</button><button class="btn-next" onclick="saveAndFinish()" id="btn-finish">Finalizar evaluación ✓</button></div>
@@ -455,7 +455,9 @@ const CLUBS = {
     colorPale:  '#D6EFF8',
     colorMist:  '#EDF7FB',
   },
-  // Ejemplo de club adicional — duplicá este bloque para agregar más:
+  // Ejemplo de club adicional — duplicá este bloque para agregar más.
+  // Podés incluir una clave "questions" para personalizar cualquier pregunta.
+  // Cada clave que no se defina usa el texto/opciones por defecto.
   // 'clubnorte': {
   //   id: 'clubnorte',
   //   nombre: 'Club Norte',
@@ -464,6 +466,20 @@ const CLUBS = {
   //   colorLight: '#9B4DB8',
   //   colorPale:  '#EDD6F8',
   //   colorMist:  '#F7EDFC',
+  //   questions: {
+  //     // Reemplazar las 3 preguntas de lógica (cada una con text, opts y correct):
+  //     // logica: [
+  //     //   { text: "¿Cuántos jugadores tiene un equipo de hockey?",
+  //     //     opts: ["9","10","11","12"], correct: 2 },
+  //     //   { text: "...", opts: [...], correct: 0 },
+  //     //   { text: "...", opts: [...], correct: 1 }
+  //     // ],
+  //     // Cambiar las opciones de motivación:
+  //     // motivacion: {
+  //     //   text: "¿Qué te motiva a seguir jugando?",
+  //     //   opts: ["El deporte en sí","El equipo","La competencia","La diversión"]
+  //     // },
+  //   },
   // },
 };
 
@@ -485,26 +501,66 @@ let currentClub = _clubCfg.id;
 })();
 
 // ═══════════════════════════════════════════════
-// QUESTION DATA
-const logicOptions = [
-  { opts:["1 gol","3 goles","2 goles","5 goles"], correct:1 },
-  { opts:["A (más rápida)","B (intermedia)","C (más resistente)","Ninguna claramente"], correct:3 },
-  { opts:["La recepción","El control","El pase","Nada, es válido igual"], correct:1 }
-];
-const personalityItems = [
-  "Mantengo la calma bajo presión en los últimos minutos",
-  "Acepto bien las críticas del cuerpo técnico",
-  "Me entrego aunque el resultado ya esté definido",
-  "Prefiero el juego colectivo al lucimiento individual",
-  "Me recupero emocionalmente rápido después de un error"
-];
-const commsItems = ["Comunicación durante el juego","Comunicación en entrenamientos","Comunicación fuera de la cancha","Comunicación con cuerpo técnico","Escucha activa entre compañeras"];
-const cohesionOpts = ["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"];
-const supportOpts  = ["Siempre","Casi siempre","A veces","Rara vez"];
-const roleOpts     = ["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"];
-const leaderOpts   = ["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"];
-const conflictOpts = ["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"];
-const motivationOpts = ["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"];
+// QUESTION DATA — configurable por club vía CLUBS[x].questions
+// Cada clave puede sobreescribirse por completo en la entrada del club.
+const DEFAULT_QUESTIONS = {
+  logica: [
+    { text: "En un partido, tu equipo anota 3 goles en el primer tiempo y 2 en el segundo. El rival anota 1 en cada tiempo. ¿Cuántos goles de diferencia tiene tu equipo al final?",
+      opts: ["1 gol","3 goles","2 goles","5 goles"], correct: 1 },
+    { text: "Si A es más rápida que B, y B es más rápida que C, pero C es más resistente que A, ¿quién es la más completa para jugar 70 minutos?",
+      opts: ["A (más rápida)","B (intermedia)","C (más resistente)","Ninguna claramente"], correct: 3 },
+    { text: "En una secuencia táctica se realizan siempre: recepción → control → pase. Si una jugadora recibe y no controla, ¿qué paso se salteó?",
+      opts: ["La recepción","El control","El pase","Nada, es válido igual"], correct: 1 }
+  ],
+  personalidad: [
+    "Mantengo la calma bajo presión en los últimos minutos",
+    "Acepto bien las críticas del cuerpo técnico",
+    "Me entrego aunque el resultado ya esté definido",
+    "Prefiero el juego colectivo al lucimiento individual",
+    "Me recupero emocionalmente rápido después de un error"
+  ],
+  comunicacion: [
+    "Comunicación durante el juego","Comunicación en entrenamientos",
+    "Comunicación fuera de la cancha","Comunicación con cuerpo técnico","Escucha activa entre compañeras"
+  ],
+  cohesion: {
+    text: "¿Cómo describirías el nivel de unión dentro del grupo?",
+    opts: ["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"]
+  },
+  soporte: {
+    text: "¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?",
+    opts: ["Siempre","Casi siempre","A veces","Rara vez"]
+  },
+  rol: {
+    text: "¿Sentís que tu rol dentro del equipo está claramente definido?",
+    opts: ["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"]
+  },
+  lider: {
+    text: "¿A quién acudís naturalmente cuando el equipo necesita dirección?",
+    opts: ["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"]
+  },
+  conflicto: {
+    text: "Cuando surge una diferencia importante, ¿cómo suele resolverse?",
+    opts: ["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"]
+  },
+  motivacion: {
+    text: "¿Cuál es tu principal motivación para seguir en el Masters?",
+    opts: ["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"]
+  }
+};
+// Mezcla preguntas por defecto con las del club (por clave, no profundo)
+const _clubQ = _clubCfg.questions || {};
+const Q = {
+  logica:       _clubQ.logica       || DEFAULT_QUESTIONS.logica,
+  personalidad: _clubQ.personalidad || DEFAULT_QUESTIONS.personalidad,
+  comunicacion: _clubQ.comunicacion || DEFAULT_QUESTIONS.comunicacion,
+  cohesion:     _clubQ.cohesion     || DEFAULT_QUESTIONS.cohesion,
+  soporte:      _clubQ.soporte      || DEFAULT_QUESTIONS.soporte,
+  rol:          _clubQ.rol          || DEFAULT_QUESTIONS.rol,
+  lider:        _clubQ.lider        || DEFAULT_QUESTIONS.lider,
+  conflicto:    _clubQ.conflicto    || DEFAULT_QUESTIONS.conflicto,
+  motivacion:   _clubQ.motivacion   || DEFAULT_QUESTIONS.motivacion,
+};
 
 // ═══════════════════════════════════════════════
 // UI BUILDERS
@@ -543,15 +599,28 @@ function buildLikert(id, items, key) {
   c.innerHTML = html;
 }
 function initUI() {
-  logicOptions.forEach((lq,i) => buildRadio(`rg-logic-${i}`, lq.opts, `logic_${i}`));
-  buildLikert('likert-personality', personalityItems, 'pers');
-  buildRadio('rg-cohesion', cohesionOpts, 'cohesion');
-  buildRadio('rg-support', supportOpts, 'support');
-  buildRadio('rg-role', roleOpts, 'role');
-  buildRadio('rg-leader', leaderOpts, 'leader');
-  buildLikert('likert-comms', commsItems, 'comms');
-  buildRadio('rg-conflict', conflictOpts, 'conflict');
-  buildRadio('rg-motivation', motivationOpts, 'motivation');
+  // Lógica: texto de cada pregunta + opciones (configurables por club)
+  Q.logica.forEach((lq,i) => {
+    const qb = document.getElementById(`qb-logic-${i}`);
+    if (qb) qb.querySelector('.q-text').textContent = lq.text;
+    buildRadio(`rg-logic-${i}`, lq.opts, `logic_${i}`);
+  });
+  buildLikert('likert-personality', Q.personalidad, 'pers');
+  // Textos de preguntas grupales (configurables por club)
+  const setQ = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setQ('qt-cohesion',   Q.cohesion.text);
+  setQ('qt-support',    Q.soporte.text);
+  setQ('qt-role',       Q.rol.text);
+  setQ('qt-leader',     Q.lider.text);
+  setQ('qt-conflict',   Q.conflicto.text);
+  setQ('qt-motivation', Q.motivacion.text);
+  buildRadio('rg-cohesion',   Q.cohesion.opts,   'cohesion');
+  buildRadio('rg-support',    Q.soporte.opts,    'support');
+  buildRadio('rg-role',       Q.rol.opts,        'role');
+  buildRadio('rg-leader',     Q.lider.opts,      'leader');
+  buildLikert('likert-comms', Q.comunicacion,    'comms');
+  buildRadio('rg-conflict',   Q.conflicto.opts,  'conflict');
+  buildRadio('rg-motivation', Q.motivacion.opts, 'motivation');
   buildAttnGrid();
   buildMemGrid();
 }
@@ -746,11 +815,11 @@ function showEntry(){
 // ═══════════════════════════════════════════════
 // COLLECT + SAVE
 function collectPayload(){
-  const logica = logicOptions.map((lq,i)=>{
+  const logica = Q.logica.map((lq,i)=>{
     const sel=document.querySelector(`input[name="logic_${i}"]:checked`);
     return { pregunta:i+1, respuesta: sel?lq.opts[sel.value]:'—', correcta: sel?parseInt(sel.value)===lq.correct:false };
   });
-  const personalidad = personalityItems.map((desc,i)=>{
+  const personalidad = Q.personalidad.map((desc,i)=>{
     const sel=document.querySelector(`input[name="pers_${i}"]:checked`);
     return { item:i+1, descripcion:desc, valor: sel?parseInt(sel.value):0 };
   }).filter(p=>p.valor>0);
@@ -763,7 +832,7 @@ function collectPayload(){
   const leaderSel=document.querySelector('input[name="leader"]:checked');
   const confSel=document.querySelector('input[name="conflict"]:checked');
   const motSel=document.querySelector('input[name="motivation"]:checked');
-  const comms=commsItems.map((desc,i)=>{
+  const comms=Q.comunicacion.map((desc,i)=>{
     const sel=document.querySelector(`input[name="comms_${i}"]:checked`);
     return { item:i+1, descripcion:desc, valor:sel?parseInt(sel.value):0 };
   }).filter(c=>c.valor>0);
@@ -777,11 +846,11 @@ function collectPayload(){
       reaccion:reactionTimes
     },
     grupal:{
-      cohesion:{ nivelUnion:cohSel?cohesionOpts[cohSel.value]:'—', apoyo:supSel?supportOpts[supSel.value]:'—' },
-      liderazgo:{ claridadRol:roleSel?roleOpts[roleSel.value]:'—', referente:leaderSel?leaderOpts[leaderSel.value]:'—' },
+      cohesion:{ nivelUnion:cohSel?Q.cohesion.opts[cohSel.value]:'—', apoyo:supSel?Q.soporte.opts[supSel.value]:'—' },
+      liderazgo:{ claridadRol:roleSel?Q.rol.opts[roleSel.value]:'—', referente:leaderSel?Q.lider.opts[leaderSel.value]:'—' },
       comunicacion:comms,
-      conflicto:{ mecanismo:confSel?conflictOpts[confSel.value]:'—', relato:document.getElementById('ta-conflict').value||null },
-      motivacion:{ motivacion:motSel?motivationOpts[motSel.value]:'—', valoresGrupo:document.getElementById('ta-values').value||null, mejoraSugerida:document.getElementById('ta-improve').value||null }
+      conflicto:{ mecanismo:confSel?Q.conflicto.opts[confSel.value]:'—', relato:document.getElementById('ta-conflict').value||null },
+      motivacion:{ motivacion:motSel?Q.motivacion.opts[motSel.value]:'—', valoresGrupo:document.getElementById('ta-values').value||null, mejoraSugerida:document.getElementById('ta-improve').value||null }
     }
   };
 }

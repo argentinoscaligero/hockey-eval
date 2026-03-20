@@ -83,6 +83,7 @@ router.get('/ranking', async (req, res) => {
       SELECT
         j.nombre,
         j.posicion,
+        j.club_id,
         s.id AS sesion_id,
         -- Lógica (0-3)
         (SELECT COUNT(*) FROM resultado_logica l WHERE l.sesion_id=s.id AND l.correcta) AS logica_score,
@@ -137,6 +138,7 @@ router.get('/comparativa', async (req, res) => {
       SELECT
         j.nombre,
         j.posicion,
+        j.club_id,
         s.id AS sesion_id,
         -- Score normalizado 0-10 por dimensión
         ROUND(((SELECT COUNT(*) FROM resultado_logica l WHERE l.sesion_id=s.id AND l.correcta)::numeric / 3)*10, 1) AS logica_norm,
