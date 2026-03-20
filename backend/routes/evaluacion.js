@@ -20,9 +20,9 @@ router.post('/submit', async (req, res) => {
 
     // 1. Insertar jugadora
     const jRes = await client.query(
-      `INSERT INTO jugadoras (nombre, posicion, trayectoria)
-       VALUES ($1, $2, $3) RETURNING id`,
-      [jugadora.nombre.trim(), jugadora.posicion, jugadora.trayectoria]
+      `INSERT INTO jugadoras (nombre, posicion, trayectoria, club_id)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [jugadora.nombre.trim(), jugadora.posicion, jugadora.trayectoria, jugadora.clubId || '']
     );
     const jugadoraId = jRes.rows[0].id;
 

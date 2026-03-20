@@ -11,7 +11,18 @@ router.use(requireAdmin);
 // ─────────────────────────────────────────────────────────────
 router.get('/resumen', async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM v_resumen_sesiones`);
+    const { club } = req.query;
+    const clubFilter = club ? `WHERE j.club_id = $1` : '';
+    const params = club ? [club] : [];
+    const result = await pool.query(
+      `SELECT v.*, j.club_id
+       FROM v_resumen_sesiones v
+       JOIN sesiones s ON s.id = v.sesion_id
+       JOIN jugadoras j ON j.id = s.jugadora_id
+       ${clubFilter}
+       ORDER BY v.created_at DESC`,
+      params
+    );
     res.json(result.rows);
   } catch (err) {
     console.error('[admin/resumen]', err.message);

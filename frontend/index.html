@@ -222,8 +222,8 @@
         <circle cx="26" cy="14" r="4" fill="rgba(255,255,255,.6)"/>
       </svg>
       <div>
-        <div class="header-title">Masters +55 Damas Argentina</div>
-        <div class="header-sub">Hockey sobre Césped · Evaluación</div>
+        <div class="header-title" id="header-title">Masters +55 Damas Argentina</div>
+        <div class="header-sub" id="header-sub">Hockey sobre Césped · Evaluación</div>
       </div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
@@ -440,6 +440,49 @@ const API = '/api';  // mismo origen vía Nginx
 let adminToken = null;
 let adminData  = { resumen: [], ranking: [], comparativa: [] };
 let chartInstances = {};
+
+// ═══════════════════════════════════════════════
+// MULTI-CLUB CONFIG
+// Para agregar un club: copiar el bloque y cambiar la clave (ej: 'rojo') y los datos.
+// La URL sería: tests.penaltycorner.com.ar/rojo
+const CLUBS = {
+  '': {
+    id: '',
+    nombre: 'Masters +55 Damas Argentina',
+    sub: 'Hockey sobre Césped · Evaluación',
+    colorMain:  '#1A6B8A',
+    colorLight: '#2196B8',
+    colorPale:  '#D6EFF8',
+    colorMist:  '#EDF7FB',
+  },
+  // Ejemplo de club adicional — duplicá este bloque para agregar más:
+  // 'clubnorte': {
+  //   id: 'clubnorte',
+  //   nombre: 'Club Norte',
+  //   sub: 'Hockey sobre Césped · Evaluación',
+  //   colorMain:  '#6B2D8A',
+  //   colorLight: '#9B4DB8',
+  //   colorPale:  '#EDD6F8',
+  //   colorMist:  '#F7EDFC',
+  // },
+};
+
+// Detectar club desde el path de la URL (/clubnorte → 'clubnorte')
+const _clubPath = location.pathname.replace(/^\/+/, '').split('/')[0] || '';
+const _clubCfg  = CLUBS[_clubPath] || CLUBS[''];
+let currentClub = _clubCfg.id;
+
+// Aplicar colores y textos del club
+(function applyClub() {
+  const r = document.documentElement.style;
+  r.setProperty('--grass',       _clubCfg.colorMain);
+  r.setProperty('--grass-light', _clubCfg.colorLight);
+  r.setProperty('--grass-pale',  _clubCfg.colorPale);
+  r.setProperty('--grass-mist',  _clubCfg.colorMist);
+  document.getElementById('header-title').textContent = _clubCfg.nombre;
+  document.getElementById('header-sub').textContent   = _clubCfg.sub;
+  document.title = _clubCfg.nombre + ' — Evaluación';
+})();
 
 // ═══════════════════════════════════════════════
 // QUESTION DATA
@@ -725,7 +768,7 @@ function collectPayload(){
     return { item:i+1, descripcion:desc, valor:sel?parseInt(sel.value):0 };
   }).filter(c=>c.valor>0);
   return {
-    jugadora:{ nombre:currentPlayer.name, posicion:currentPlayer.position, trayectoria:currentPlayer.years },
+    jugadora:{ nombre:currentPlayer.name, posicion:currentPlayer.position, trayectoria:currentPlayer.years, clubId:currentClub },
     psicotecnico:{
       logica,
       personalidad,
@@ -815,6 +858,7 @@ async function loadAdminData(){
       fetch(`${API}/admin/comparativa`,{headers}).then(r=>r.json()),
     ]);
     adminData={resumen,ranking,comparativa};
+    buildClubFilter();
     renderTabla();
     renderRanking();
     renderAlertas();
@@ -827,16 +871,46 @@ async function loadAdminData(){
 
 async function reloadAdmin(){ await loadAdminData(); showToast('Datos actualizados.',2000); }
 
+// ── FILTRO POR CLUB ──
+let clubFilter = '';
+function buildClubFilter() {
+  const clubs = [...new Set(adminData.resumen.map(r => r.club_id || '').filter(Boolean))];
+  const area = document.getElementById('admin-table-area');
+  if (clubs.length <= 1) { clubFilter = ''; return; }
+  const sel = document.createElement('select');
+  sel.className = 'jugadora-select';
+  sel.style.cssText = 'max-width:300px;margin-bottom:16px;';
+  sel.innerHTML = '<option value="">Todos los equipos</option>' +
+    clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+  sel.onchange = () => { clubFilter = sel.value; renderTabla(); renderRanking(); renderAlertas(); buildJugadoraSelect(); renderBarCharts(); };
+  const wrap = document.createElement('div');
+  wrap.id = 'club-filter-wrap';
+  wrap.appendChild(sel);
+  const existing = document.getElementById('club-filter-wrap');
+  if (existing) existing.replaceWith(wrap);
+  else area.parentElement.insertBefore(wrap, area);
+}
+function filteredResumen() {
+  return clubFilter ? adminData.resumen.filter(r => (r.club_id || '') === clubFilter) : adminData.resumen;
+}
+function filteredRanking() {
+  return clubFilter ? adminData.ranking.filter(r => (r.club_id || '') === clubFilter) : adminData.ranking;
+}
+function filteredComparativa() {
+  return clubFilter ? adminData.comparativa.filter(r => (r.club_id || '') === clubFilter) : adminData.comparativa;
+}
+
 // ── TABLA ──
 function renderTabla(){
   const area=document.getElementById('admin-table-area');
-  const rows=adminData.resumen;
+  const rows=filteredResumen();
+  const hayMultiClub = [...new Set(adminData.resumen.map(r=>r.club_id||'').filter(Boolean))].length > 0;
   if(!rows||rows.length===0){
     area.innerHTML=`<div class="empty-state"><div class="big">📋</div><p>Todavía no hay respuestas. Las jugadoras deben completar la evaluación.</p></div>`;
     return;
   }
   let html=`<div class="admin-table-wrap"><table class="admin-table">
-    <thead><tr><th>#</th><th>Nombre</th><th>Posición</th><th>Lógica</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Pers.</th><th>Comms.</th><th>Fecha</th><th></th></tr></thead><tbody>`;
+    <thead><tr><th>#</th><th>Nombre</th><th>Posición</th>${hayMultiClub?'<th>Equipo</th>':''}<th>Lógica</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Pers.</th><th>Comms.</th><th>Fecha</th><th></th></tr></thead><tbody>`;
   rows.forEach((r,i)=>{
     const logicPill=parseInt(r.logica_correctas)>=2?'pill-green':'pill-gold';
     const memPill=r.memoria_ok?'pill-green':'pill-red';
@@ -845,6 +919,7 @@ function renderTabla(){
       <td style="color:var(--muted)">${i+1}</td>
       <td><strong>${r.nombre}</strong><br><span style="font-size:11px;color:var(--muted)">${r.trayectoria}</span></td>
       <td>${r.posicion}</td>
+      ${hayMultiClub?`<td><span style="font-size:11px;background:var(--grass-pale);color:var(--grass);padding:2px 8px;border-radius:10px;font-weight:600;">${r.club_id||'—'}</span></td>`:''}
       <td><span class="pill ${logicPill}">${r.logica_correctas}/3</span></td>
       <td>${r.atencion_aciertos||'—'}/${r.atencion_total||'—'}</td>
       <td><span class="pill ${memPill}">${r.memoria_ok?'✓ Sí':'✗ No'}</span></td>
@@ -862,7 +937,7 @@ function renderTabla(){
 // ── RANKING ──
 function renderRanking(){
   const area=document.getElementById('ranking-area');
-  const rows=adminData.ranking;
+  const rows=filteredRanking();
   if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">🏅</div><p>Sin datos todavía.</p></div>'; return; }
   const dims=[
     {label:'Razonamiento lógico',key:'logica_score',max:3,unit:'/3',asc:false},
@@ -888,7 +963,7 @@ function renderRanking(){
 // ── ALERTAS ──
 function renderAlertas(){
   const area=document.getElementById('alertas-area');
-  const rows=adminData.ranking;
+  const rows=filteredRanking();
   if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">⚠️</div><p>Sin datos todavía.</p></div>'; return; }
   const conAlertas=rows.filter(r=>r.alertas&&r.alertas.length>0);
   if(conAlertas.length===0){
@@ -908,7 +983,7 @@ function renderAlertas(){
 function buildJugadoraSelect(){
   const sel=document.getElementById('jugadora-select');
   sel.innerHTML='<option value="">Seleccioná una jugadora…</option>';
-  (adminData.comparativa||[]).forEach(r=>{
+  (filteredComparativa()||[]).forEach(r=>{
     const opt=document.createElement('option');
     opt.value=r.sesion_id;
     opt.textContent=`${r.nombre} (${r.posicion})`;
@@ -947,7 +1022,7 @@ function renderRadar(){
 }
 
 function renderBarCharts(){
-  const data=adminData.comparativa;
+  const data=filteredComparativa();
   if(!data||data.length===0) return;
   const names=data.map(r=>r.nombre);
   const green='rgba(26,107,138,.75)';

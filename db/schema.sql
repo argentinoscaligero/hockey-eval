@@ -17,6 +17,7 @@ CREATE TABLE jugadoras (
     nombre      TEXT NOT NULL,
     posicion    TEXT NOT NULL,
     trayectoria TEXT NOT NULL,
+    club_id     TEXT NOT NULL DEFAULT '',
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
