@@ -198,6 +198,82 @@ CREATE INDEX idx_comunicacion_sesion ON resultado_comunicacion(sesion_id);
 CREATE INDEX idx_reaccion_sesion ON resultado_reaccion(sesion_id);
 
 -- ------------------------------------------------------------
+-- Preguntas configurables por club
+-- seccion: 'logica' | 'personalidad' | 'comunicacion' |
+--          'cohesion' | 'soporte' | 'rol' | 'lider' | 'conflicto' | 'motivacion'
+-- club_id = '' → preguntas por defecto para todos los clubs
+-- Si existe al menos 1 fila activa con club_id = 'X' para una sección,
+-- esas sobreescriben las del defecto para ese club en esa sección.
+-- Para logica: opciones = array de strings, correcta = índice (0-based)
+-- Para personalidad/comunicacion: opciones = null (ítems Likert)
+-- Para el resto: opciones = array de strings (radio), correcta = null
+-- ------------------------------------------------------------
+CREATE TABLE preguntas (
+    id       SERIAL PRIMARY KEY,
+    club_id  TEXT NOT NULL DEFAULT '',
+    seccion  TEXT NOT NULL,
+    orden    INT  NOT NULL DEFAULT 0,
+    texto    TEXT NOT NULL,
+    opciones JSONB,
+    correcta INT,
+    activa   BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE INDEX idx_preguntas_club_seccion ON preguntas(club_id, seccion);
+
+-- Preguntas por defecto (club_id = '')
+INSERT INTO preguntas (club_id, seccion, orden, texto, opciones, correcta) VALUES
+-- Lógica
+('', 'logica', 1,
+ 'En un partido, tu equipo anota 3 goles en el primer tiempo y 2 en el segundo. El rival anota 1 en cada tiempo. ¿Cuántos goles de diferencia tiene tu equipo al final?',
+ '["1 gol","3 goles","2 goles","5 goles"]'::jsonb, 1),
+('', 'logica', 2,
+ 'Si A es más rápida que B, y B es más rápida que C, pero C es más resistente que A, ¿quién es la más completa para jugar 70 minutos?',
+ '["A (más rápida)","B (intermedia)","C (más resistente)","Ninguna claramente"]'::jsonb, 3),
+('', 'logica', 3,
+ 'En una secuencia táctica se realizan siempre: recepción → control → pase. Si una jugadora recibe y no controla, ¿qué paso se salteó?',
+ '["La recepción","El control","El pase","Nada, es válido igual"]'::jsonb, 1),
+-- Personalidad deportiva (Likert)
+('', 'personalidad', 1, 'Mantengo la calma bajo presión en los últimos minutos', null, null),
+('', 'personalidad', 2, 'Acepto bien las críticas del cuerpo técnico', null, null),
+('', 'personalidad', 3, 'Me entrego aunque el resultado ya esté definido', null, null),
+('', 'personalidad', 4, 'Prefiero el juego colectivo al lucimiento individual', null, null),
+('', 'personalidad', 5, 'Me recupero emocionalmente rápido después de un error', null, null),
+-- Comunicación (Likert)
+('', 'comunicacion', 1, 'Comunicación durante el juego', null, null),
+('', 'comunicacion', 2, 'Comunicación en entrenamientos', null, null),
+('', 'comunicacion', 3, 'Comunicación fuera de la cancha', null, null),
+('', 'comunicacion', 4, 'Comunicación con cuerpo técnico', null, null),
+('', 'comunicacion', 5, 'Escucha activa entre compañeras', null, null),
+-- Cohesión
+('', 'cohesion', 1,
+ '¿Cómo describirías el nivel de unión dentro del grupo?',
+ '["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"]'::jsonb, null),
+-- Soporte
+('', 'soporte', 1,
+ '¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?',
+ '["Siempre","Casi siempre","A veces","Rara vez"]'::jsonb, null),
+-- Rol
+('', 'rol', 1,
+ '¿Sentís que tu rol dentro del equipo está claramente definido?',
+ '["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"]'::jsonb, null),
+-- Liderazgo
+('', 'lider', 1,
+ '¿A quién acudís naturalmente cuando el equipo necesita dirección?',
+ '["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"]'::jsonb, null),
+-- Conflicto
+('', 'conflicto', 1,
+ 'Cuando surge una diferencia importante, ¿cómo suele resolverse?',
+ '["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"]'::jsonb, null),
+-- Motivación
+('', 'motivacion', 1,
+ '¿Cuál es tu principal motivación para seguir en el Masters?',
+ '["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"]'::jsonb, null);
+
+-- Permisos (ejecutar como superuser)
+-- GRANT SELECT ON preguntas TO hockey_app;
+-- GRANT USAGE, SELECT ON SEQUENCE preguntas_id_seq TO hockey_app;
+
+-- ------------------------------------------------------------
 -- Usuario de aplicación (ejecutar como superuser)
 -- ------------------------------------------------------------
 -- CREATE USER hockey_app WITH PASSWORD 'CAMBIAR_PASSWORD_SEGURA';

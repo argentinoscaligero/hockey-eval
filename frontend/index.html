@@ -456,8 +456,7 @@ const CLUBS = {
     colorMist:  '#EDF7FB',
   },
   // Ejemplo de club adicional — duplicá este bloque para agregar más.
-  // Podés incluir una clave "questions" para personalizar cualquier pregunta.
-  // Cada clave que no se defina usa el texto/opciones por defecto.
+  // Las preguntas se configuran en la tabla `preguntas` de la DB (club_id = 'clubnorte').
   // 'clubnorte': {
   //   id: 'clubnorte',
   //   nombre: 'Club Norte',
@@ -466,20 +465,6 @@ const CLUBS = {
   //   colorLight: '#9B4DB8',
   //   colorPale:  '#EDD6F8',
   //   colorMist:  '#F7EDFC',
-  //   questions: {
-  //     // Reemplazar las 3 preguntas de lógica (cada una con text, opts y correct):
-  //     // logica: [
-  //     //   { text: "¿Cuántos jugadores tiene un equipo de hockey?",
-  //     //     opts: ["9","10","11","12"], correct: 2 },
-  //     //   { text: "...", opts: [...], correct: 0 },
-  //     //   { text: "...", opts: [...], correct: 1 }
-  //     // ],
-  //     // Cambiar las opciones de motivación:
-  //     // motivacion: {
-  //     //   text: "¿Qué te motiva a seguir jugando?",
-  //     //   opts: ["El deporte en sí","El equipo","La competencia","La diversión"]
-  //     // },
-  //   },
   // },
 };
 
@@ -501,8 +486,7 @@ let currentClub = _clubCfg.id;
 })();
 
 // ═══════════════════════════════════════════════
-// QUESTION DATA — configurable por club vía CLUBS[x].questions
-// Cada clave puede sobreescribirse por completo en la entrada del club.
+// QUESTION DATA — fallback estático (usado si la DB no responde)
 const DEFAULT_QUESTIONS = {
   logica: [
     { text: "En un partido, tu equipo anota 3 goles en el primer tiempo y 2 en el segundo. El rival anota 1 en cada tiempo. ¿Cuántos goles de diferencia tiene tu equipo al final?",
@@ -523,44 +507,50 @@ const DEFAULT_QUESTIONS = {
     "Comunicación durante el juego","Comunicación en entrenamientos",
     "Comunicación fuera de la cancha","Comunicación con cuerpo técnico","Escucha activa entre compañeras"
   ],
-  cohesion: {
-    text: "¿Cómo describirías el nivel de unión dentro del grupo?",
-    opts: ["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"]
-  },
-  soporte: {
-    text: "¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?",
-    opts: ["Siempre","Casi siempre","A veces","Rara vez"]
-  },
-  rol: {
-    text: "¿Sentís que tu rol dentro del equipo está claramente definido?",
-    opts: ["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"]
-  },
-  lider: {
-    text: "¿A quién acudís naturalmente cuando el equipo necesita dirección?",
-    opts: ["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"]
-  },
-  conflicto: {
-    text: "Cuando surge una diferencia importante, ¿cómo suele resolverse?",
-    opts: ["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"]
-  },
-  motivacion: {
-    text: "¿Cuál es tu principal motivación para seguir en el Masters?",
-    opts: ["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"]
+  cohesion:   { text: "¿Cómo describirías el nivel de unión dentro del grupo?",
+                opts: ["Muy alta — somos una familia dentro y fuera","Alta — nos llevamos bien aunque no compartamos todo","Media — hay diferencias entre subgrupos","Baja — falta más vínculo entre todas"] },
+  soporte:    { text: "¿Con qué frecuencia sentís que tus compañeras te apoyan en momentos difíciles?",
+                opts: ["Siempre","Casi siempre","A veces","Rara vez"] },
+  rol:        { text: "¿Sentís que tu rol dentro del equipo está claramente definido?",
+                opts: ["Sí, completamente claro","Bastante claro, con algunas dudas","No del todo, a veces es confuso","No, necesito más definición"] },
+  lider:      { text: "¿A quién acudís naturalmente cuando el equipo necesita dirección?",
+                opts: ["La capitana / vice-capitana designada","La más experimentada en ese momento","Me apoyo en mí misma","Buscamos decisión colectiva","Dependiendo de la situación, varía"] },
+  conflicto:  { text: "Cuando surge una diferencia importante, ¿cómo suele resolverse?",
+                opts: ["Se habla en el momento, dentro del grupo","Se espera y se charla en privado después","Lo resuelve el cuerpo técnico","Queda sin resolver, genera tensión","Se evita para no dañar el clima"] },
+  motivacion: { text: "¿Cuál es tu principal motivación para seguir en el Masters?",
+                opts: ["La competencia y el desafío deportivo","El vínculo con mis compañeras","La representación y el orgullo federativo","Mi superación personal a esta edad","El placer de jugar al hockey"] },
+};
+
+// Q se carga desde la DB al inicio; si falla, usa DEFAULT_QUESTIONS.
+let Q = null;
+function _buildQFromRows(data) {
+  const toRadio   = rows => ({ text: rows[0].texto, opts: rows[0].opciones });
+  const toItems   = rows => rows.map(r => r.texto);
+  const toLogica  = rows => rows.map(r => ({ text: r.texto, opts: r.opciones, correct: r.correcta }));
+  const D = DEFAULT_QUESTIONS;
+  return {
+    logica:       data.logica       ? toLogica(data.logica)   : D.logica,
+    personalidad: data.personalidad ? toItems(data.personalidad) : D.personalidad,
+    comunicacion: data.comunicacion ? toItems(data.comunicacion) : D.comunicacion,
+    cohesion:     data.cohesion     ? toRadio(data.cohesion)  : D.cohesion,
+    soporte:      data.soporte      ? toRadio(data.soporte)   : D.soporte,
+    rol:          data.rol          ? toRadio(data.rol)       : D.rol,
+    lider:        data.lider        ? toRadio(data.lider)     : D.lider,
+    conflicto:    data.conflicto    ? toRadio(data.conflicto) : D.conflicto,
+    motivacion:   data.motivacion   ? toRadio(data.motivacion): D.motivacion,
+  };
+}
+// Cargar preguntas de la DB en background al abrir la página
+(async function loadQ() {
+  try {
+    const r = await fetch(`${API}/eval/preguntas?club=${encodeURIComponent(currentClub)}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    Q = _buildQFromRows(await r.json());
+  } catch(e) {
+    console.warn('[preguntas] usando fallback estático:', e.message);
+    Q = _buildQFromRows({});
   }
-};
-// Mezcla preguntas por defecto con las del club (por clave, no profundo)
-const _clubQ = _clubCfg.questions || {};
-const Q = {
-  logica:       _clubQ.logica       || DEFAULT_QUESTIONS.logica,
-  personalidad: _clubQ.personalidad || DEFAULT_QUESTIONS.personalidad,
-  comunicacion: _clubQ.comunicacion || DEFAULT_QUESTIONS.comunicacion,
-  cohesion:     _clubQ.cohesion     || DEFAULT_QUESTIONS.cohesion,
-  soporte:      _clubQ.soporte      || DEFAULT_QUESTIONS.soporte,
-  rol:          _clubQ.rol          || DEFAULT_QUESTIONS.rol,
-  lider:        _clubQ.lider        || DEFAULT_QUESTIONS.lider,
-  conflicto:    _clubQ.conflicto    || DEFAULT_QUESTIONS.conflicto,
-  motivacion:   _clubQ.motivacion   || DEFAULT_QUESTIONS.motivacion,
-};
+})();
 
 // ═══════════════════════════════════════════════
 // UI BUILDERS
@@ -793,11 +783,18 @@ function finishSection(idx){ if(idx===0){ goSection(1); window.scrollTo({top:0,b
 // ═══════════════════════════════════════════════
 // ENTRY
 let currentPlayer={};
-function startTest(){
+async function startTest(){
   const name=document.getElementById('input-name').value.trim();
   const pos=document.getElementById('input-position').value;
   const yrs=document.getElementById('input-years').value;
   if(!name||!pos||!yrs){ showToast('Completá todos los campos.',3000,'#C0392B'); return; }
+  // Si las preguntas todavía no cargaron (muy raro), esperar hasta 3s
+  if(!Q){
+    setLoading(true);
+    for(let i=0;i<30;i++){ await new Promise(r=>setTimeout(r,100)); if(Q) break; }
+    setLoading(false);
+    if(!Q){ Q = _buildQFromRows({}); } // último recurso: defaults
+  }
   currentPlayer={name,position:pos,years:yrs};
   document.getElementById('player-badge').textContent=name;
   document.getElementById('player-badge').style.display='block';

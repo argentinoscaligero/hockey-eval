@@ -1,11 +1,41 @@
 const router = require('express').Router();
 const { pool } = require('../db');
 
-/**
- * POST /api/eval/submit
- * Guarda la evaluación completa de una jugadora en una transacción.
- * Body: { jugadora, psicotecnico, grupal }
- */
+// ─────────────────────────────────────────────────────────────
+// GET /api/eval/preguntas?club=X
+// Devuelve las preguntas activas para el club dado.
+// Por sección: si existen filas con club_id=X, las usa;
+// si no, usa las del defecto (club_id='').
+// ─────────────────────────────────────────────────────────────
+router.get('/preguntas', async (req, res) => {
+  const club = (req.query.club || '').trim();
+  try {
+    const result = await pool.query(
+      `SELECT seccion, orden, texto, opciones, correcta, club_id
+       FROM preguntas
+       WHERE activa = TRUE AND (club_id = $1 OR club_id = '')
+       ORDER BY seccion, club_id DESC, orden`,
+      [club]
+    );
+    // Por sección: preferir filas del club sobre las del defecto
+    const sections = {};
+    for (const row of result.rows) {
+      if (!sections[row.seccion]) sections[row.seccion] = { def: [], club: [] };
+      if (row.club_id === '') sections[row.seccion].def.push(row);
+      else                    sections[row.seccion].club.push(row);
+    }
+    const out = {};
+    for (const [sec, data] of Object.entries(sections)) {
+      out[sec] = data.club.length ? data.club : data.def;
+    }
+    res.json(out);
+  } catch (err) {
+    console.error('[eval/preguntas]', err.message);
+    res.status(500).json({ error: 'Error al cargar preguntas.' });
+  }
+});
+
+
 router.post('/submit', async (req, res) => {
   const { jugadora, psicotecnico, grupal } = req.body;
 
