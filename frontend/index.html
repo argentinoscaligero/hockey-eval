@@ -1025,6 +1025,7 @@ function renderRanking(){
   const area=document.getElementById('ranking-area');
   const rows=filteredRanking();
   if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">🏅</div><p>Sin datos todavía.</p></div>'; return; }
+  const hayMultiClub = [...new Set(adminData.ranking.map(r=>r.club_id||'').filter(Boolean))].length > 1;
   const dims=[
     {label:'Razonamiento lógico',key:'logica_score',max:3,unit:'/3',asc:false},
     {label:'Atención (%)',key:'atencion_pct',max:100,unit:'%',asc:false},
@@ -1036,10 +1037,10 @@ function renderRanking(){
   dims.forEach(dim=>{
     const sorted=[...rows].filter(r=>r[dim.key]!=null).sort((a,b)=>dim.asc?a[dim.key]-b[dim.key]:b[dim.key]-a[dim.key]);
     html+=`<div class="admin-table-wrap" style="margin-bottom:20px;"><div style="padding:14px 16px;background:#F3F7FA;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${dim.label}</div>
-    <table class="admin-table"><thead><tr><th>Pos.</th><th>Jugadora</th><th>Posición</th><th>Resultado</th></tr></thead><tbody>`;
+    <table class="admin-table"><thead><tr><th>Pos.</th><th>Jugadora</th><th>Posición</th>${hayMultiClub?'<th>Equipo</th>':''}<th>Resultado</th></tr></thead><tbody>`;
     sorted.forEach((r,i)=>{
       const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-num';
-      html+=`<tr><td><span class="rank-num ${rankClass}">${i+1}</span></td><td><strong>${r.nombre}</strong></td><td>${r.posicion}</td><td><strong>${parseFloat(r[dim.key]).toFixed(1)}${dim.unit}</strong></td></tr>`;
+      html+=`<tr><td><span class="rank-num ${rankClass}">${i+1}</span></td><td><strong>${r.nombre}</strong></td><td>${r.posicion}</td>${hayMultiClub?`<td><span style="font-size:11px;background:var(--grass-pale);color:var(--grass);padding:2px 8px;border-radius:10px;font-weight:600;">${r.club_id||'—'}</span></td>`:''}<td><strong>${parseFloat(r[dim.key]).toFixed(1)}${dim.unit}</strong></td></tr>`;
     });
     html+='</tbody></table></div>';
   });
