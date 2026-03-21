@@ -195,4 +195,39 @@ router.get('/export/csv', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// DELETE /api/admin/sesion/:id
+// Elimina una sesión y todos sus resultados (CASCADE)
+// ─────────────────────────────────────────────────────────────
+router.delete('/sesion/:id', async (req, res) => {
+  const { id } = req.params;
+  // Validación básica de formato UUID
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return res.status(400).json({ error: 'ID inválido.' });
+  }
+  try {
+    // La jugadora se elimina en cascada si no tiene más sesiones
+    const sesRes = await pool.query(
+      `SELECT jugadora_id FROM sesiones WHERE id=$1`, [id]
+    );
+    if (!sesRes.rows.length) return res.status(404).json({ error: 'Sesión no encontrada.' });
+    const jugadoraId = sesRes.rows[0].jugadora_id;
+
+    await pool.query(`DELETE FROM sesiones WHERE id=$1`, [id]);
+
+    // Si la jugadora ya no tiene más sesiones, eliminarla también
+    const remaining = await pool.query(
+      `SELECT COUNT(*) FROM sesiones WHERE jugadora_id=$1`, [jugadoraId]
+    );
+    if (parseInt(remaining.rows[0].count) === 0) {
+      await pool.query(`DELETE FROM jugadoras WHERE id=$1`, [jugadoraId]);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin/sesion/delete]', err.message);
+    res.status(500).json({ error: 'Error al eliminar sesión.' });
+  }
+});
+
 module.exports = router;

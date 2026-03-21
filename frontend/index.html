@@ -155,6 +155,8 @@
   .pill-gold{background:var(--gold-pale);color:var(--gold);}
   .pill-red{background:var(--danger-bg);color:var(--danger);}
   .detail-btn{padding:5px 12px;background:var(--grass-pale);color:var(--grass);border:1px solid var(--grass-light);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .delete-btn{padding:5px 8px;background:#fdecea;color:#c0392b;border:1px solid #e8a49c;border-radius:8px;font-size:13px;cursor:pointer;line-height:1;transition:background .15s;}
+  .delete-btn:hover{background:#f8d0cc;}
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
   .empty-state .big{font-size:40px;margin-bottom:12px;}
 
@@ -937,6 +939,23 @@ async function loadAdminData(){
 
 async function reloadAdmin(){ await loadAdminData(); showToast('Datos actualizados.',2000); }
 
+async function deleteSesion(sesionId, nombre) {
+  if (!confirm(`¿Eliminás el test de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  setLoading(true);
+  try {
+    const r = await fetch(`${API}/admin/sesion/${encodeURIComponent(sesionId)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + adminToken }
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al eliminar');
+    showToast(`Test de "${nombre}" eliminado.`, 2500);
+    await loadAdminData();
+  } catch(err) {
+    showToast(err.message, 3000, '#C0392B');
+  } finally { setLoading(false); }
+}
+
 // ── FILTRO POR CLUB ──
 let clubFilter = '';
 function buildClubFilter() {
@@ -976,7 +995,7 @@ function renderTabla(){
     return;
   }
   let html=`<div class="admin-table-wrap"><table class="admin-table">
-    <thead><tr><th>#</th><th>Nombre</th><th>Posición</th>${hayMultiClub?'<th>Equipo</th>':''}<th>Lógica</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Pers.</th><th>Comms.</th><th>Fecha</th><th></th></tr></thead><tbody>`;
+    <thead><tr><th>#</th><th>Nombre</th><th>Posición</th>${hayMultiClub?'<th>Equipo</th>':''}<th>Lógica</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Pers.</th><th>Comms.</th><th>Fecha</th><th></th><th></th></tr></thead><tbody>`;
   rows.forEach((r,i)=>{
     const logicPill=parseInt(r.logica_correctas)>=2?'pill-green':'pill-gold';
     const memPill=r.memoria_ok?'pill-green':'pill-red';
@@ -994,6 +1013,7 @@ function renderTabla(){
       <td>${r.comunicacion_avg||'—'}</td>
       <td style="font-size:11px;color:var(--muted)">${r.created_at?new Date(r.created_at).toLocaleDateString('es-AR'):''}</td>
       <td><button class="detail-btn" onclick="showDetail('${r.sesion_id}')">Ver →</button></td>
+      <td><button class="delete-btn" onclick="deleteSesion('${r.sesion_id}','${r.nombre}')">🗑</button></td>
     </tr>`;
   });
   html+='</tbody></table></div>';
