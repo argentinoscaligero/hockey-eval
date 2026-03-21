@@ -1026,6 +1026,49 @@ function renderRanking(){
   const rows=filteredRanking();
   if(!rows||rows.length===0){ area.innerHTML='<div class="empty-state"><div class="big">🏅</div><p>Sin datos todavía.</p></div>'; return; }
   const hayMultiClub = [...new Set(adminData.ranking.map(r=>r.club_id||'').filter(Boolean))].length > 1;
+
+  // ── PUNTAJE GLOBAL (promedio de las 6 dimensiones normalizadas 0-10) ──
+  const compData = filteredComparativa();
+  const globalRows = compData.map(r => {
+    const vals = [
+      parseFloat(r.logica_norm)||0,
+      parseFloat(r.personalidad_norm)||0,
+      parseFloat(r.atencion_norm)||0,
+      parseFloat(r.memoria_norm)||0,
+      parseFloat(r.reaccion_norm)||0,
+      parseFloat(r.comunicacion_norm)||0,
+    ];
+    const puntaje = vals.reduce((a,b)=>a+b,0) / vals.length;
+    return { ...r, puntaje };
+  }).sort((a,b)=>b.puntaje-a.puntaje);
+
+  let html=`<div class="admin-table-wrap" style="margin-bottom:28px;border:2px solid var(--grass);">
+    <div style="padding:14px 16px;background:var(--grass);color:#fff;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">⭐ Puntaje global — todas las dimensiones (0–10)</div>
+    <table class="admin-table"><thead><tr><th>Pos.</th><th>Jugadora</th><th>Posición</th>${hayMultiClub?'<th>Equipo</th>':''}<th>Lógica</th><th>Pers.</th><th>Atención</th><th>Memoria</th><th>Reacción</th><th>Comms.</th><th style="color:var(--grass);font-weight:700;">Global</th></tr></thead><tbody>`;
+  globalRows.forEach((r,i)=>{
+    const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-num';
+    const pct = Math.round(r.puntaje*10);
+    html+=`<tr>
+      <td><span class="rank-num ${rankClass}">${i+1}</span></td>
+      <td><strong>${r.nombre}</strong></td>
+      <td>${r.posicion}</td>
+      ${hayMultiClub?`<td><span style="font-size:11px;background:var(--grass-pale);color:var(--grass);padding:2px 8px;border-radius:10px;font-weight:600;">${r.club_id||'—'}</span></td>`:''}
+      <td>${parseFloat(r.logica_norm).toFixed(1)}</td>
+      <td>${parseFloat(r.personalidad_norm).toFixed(1)}</td>
+      <td>${parseFloat(r.atencion_norm).toFixed(1)}</td>
+      <td>${parseFloat(r.memoria_norm).toFixed(1)}</td>
+      <td>${parseFloat(r.reaccion_norm).toFixed(1)}</td>
+      <td>${parseFloat(r.comunicacion_norm).toFixed(1)}</td>
+      <td><strong style="color:var(--grass);font-size:15px;">${r.puntaje.toFixed(1)}</strong>
+        <div style="margin-top:4px;height:4px;border-radius:2px;background:#eee;width:80px;">
+          <div style="height:4px;border-radius:2px;background:var(--grass);width:${pct}%;"></div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+
+  // ── RANKINGS POR DIMENSIÓN ──
   const dims=[
     {label:'Razonamiento lógico',key:'logica_score',max:3,unit:'/3',asc:false},
     {label:'Atención (%)',key:'atencion_pct',max:100,unit:'%',asc:false},
@@ -1033,7 +1076,6 @@ function renderRanking(){
     {label:'Personalidad (avg)',key:'personalidad_avg',max:5,unit:'/5',asc:false},
     {label:'Comunicación (avg)',key:'comunicacion_avg',max:5,unit:'/5',asc:false},
   ];
-  let html='';
   dims.forEach(dim=>{
     const sorted=[...rows].filter(r=>r[dim.key]!=null).sort((a,b)=>dim.asc?a[dim.key]-b[dim.key]:b[dim.key]-a[dim.key]);
     html+=`<div class="admin-table-wrap" style="margin-bottom:20px;"><div style="padding:14px 16px;background:#F3F7FA;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${dim.label}</div>
